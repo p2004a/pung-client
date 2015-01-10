@@ -1,0 +1,13 @@
+{
+    "name": "pung-client",
+    "version": "0.0.1",
+    "private": true,
+    "main": "main.html",
+    "window": {
+        "toolbar": false,
+        "width": 800,
+        "height": 600,
+        "min_width": 640,
+        "min_height": 480
+    }
+}
