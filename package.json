@@ -9,5 +9,8 @@
         "height": 600,
         "min_width": 640,
         "min_height": 480
+    },
+    "dependencies": {
+        "baconjs": "^0.7.41"
     }
 }

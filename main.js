@@ -1,5 +1,6 @@
 var net = require("net");
 var tls = require("tls");
+var Bacon = require("baconjs").Bacon;
 
 var socket = net.connect({
     host: "localhost",
