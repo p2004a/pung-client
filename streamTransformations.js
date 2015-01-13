@@ -32,7 +32,48 @@ function group(stream, n) {
         });
 }
 
+function toMessages(stream) {
+    stream = toLineStream(stream);
+    stream = group(stream, 2);
+
+    function linesToMessage(lines) {
+        var headerRE = /^s(\d{1,9}) (?:c(\d{1,9}) )?([a-z_]{3,20})$/;
+        var match = headerRE.exec(lines[0]);
+        if (match === null) {
+            return {error: "Invalid header format of message from server", value: null};
+        }
+
+        var msg = {
+            sSeq: parseInt(match[1], 10),
+            cSeq: match[2] === undefined ? null : parseInt(match[2], 10),
+            message: match[3],
+            payload: lines[1] === '' ? [] : lines[1].split(' ')
+        };
+        return {error: null, value: msg};
+    }
+
+    return stream.withHandler(function (emitter, event) {
+        switch (event.type) {
+        case 'end':
+            emitter.end();
+            break;
+        case 'error':
+            emitter.error(event.value);
+            break;
+        case 'value':
+            var res = linesToMessage(event.value);
+            if (res.error) {
+                emitter.error(res.error);
+            } else {
+                emitter.emit(res.value);
+            }
+            break;
+        }
+    });
+}
+
 module.exports = {
     group: group,
-    toLineStream: toLineStream
+    toLineStream: toLineStream,
+    toMessages: toMessages
 };
