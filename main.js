@@ -1,39 +1,20 @@
-var net = require("net");
-var tls = require("tls");
-var Bacon = require("baconjs").Bacon;
-
-var socket = net.connect({
-    host: "localhost",
-    port: 24948,
-    allowHalfOpen: false
-}, function () {
-    console.log("Connected to " + socket.remoteAddress + ":" + socket.remotePort);
-
-    var cleartextStream = tls.connect({
-        socket: socket,
-        rejectUnauthorized: false,
-        servername: "localhost"
-    });
-
-    cleartextStream.setEncoding('utf8');
-
-    cleartextStream.on('data', function(data) {
-        console.log(data);
-    });
-
-    cleartextStream.on('end', function() {
-        console.log("server disconnected");
-    });
-
-});
-socket.setKeepAlive(true, 1000 * 30);
-
-socket.on('error', function (err) {
-    console.error("Error: " + err.message);
-    process.exit(1);
-});
+var tlsStream = require("./tlsStream");
 
 process.on('uncaughtException', function(err) {
     console.error('Caught uncaught exception: ' + err);
     process.exit(2);
+});
+
+stream = tlsStream.create("localhost", 24948);
+
+stream.onValue(function (val) {
+    console.log(val);
+});
+
+stream.onError(function (err) {
+    console.error(err);
+});
+
+stream.onEnd(function () {
+    console.log("End of connection");
 });
