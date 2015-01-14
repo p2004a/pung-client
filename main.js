@@ -45,6 +45,12 @@ msgStream.onEnd(function () {
 
 msgStream.onValue(function (val) {
     console.log("line: ", val);
+    if (val.message === "ping") {
+        var msg = Message();
+        msg.message = "pong";
+        msg.sSeq = val.sSeq;
+        tlsStream.emit(msg.toString());
+    }
 });
 
 setInterval(function () {
