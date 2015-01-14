@@ -31,30 +31,100 @@ var Message = function () {
     return self;
 };
 
-tlsStream = tlsStream.create("localhost", 24948);
-msgStream = streamTrans.toMessages(tlsStream);
+var ConnectionManager = function (tlsStream) {
+    var self = {
+        responseStreams: {},
+        errorEndStream: Kefir.emitter(),
+        msgStream: streamTrans.toMessages(tlsStream).endOnError(),
+        running: true
+    };
 
-msgStream.onError(function (err) {
-    console.error("Error: " + err);
-    tlsStream.end();
-});
+    self.msgStream.onError(function () {
+        tlsStream.end();
+    });
 
-msgStream.onEnd(function () {
-    console.log("End of connection");
-});
+    self.msgStream.onValue(function (val) {
+        var resStream = self.responseStreams[val.cSeq];
+        if (resStream !== undefined) {
+            resStream.emit(val);
+        } else if (val.message === "ping") {
+            var msg = Message();
+            msg.message = "pong";
+            msg.sSeq = val.sSeq;
+            tlsStream.emit(msg.toString());
+        }
+    });
 
-msgStream.onValue(function (val) {
-    console.log("line: ", val);
-    if (val.message === "ping") {
-        var msg = Message();
-        msg.message = "pong";
-        msg.sSeq = val.sSeq;
+    self.msgStream.onEnd(function () {
+        self.running = false;
+    });
+
+    self.sendMessage = function (msg) {
+        var stream = Kefir.emitter();
+        stream.cSeq = msg.cSeq;
+        stream.unregister = function () {
+            self.unregisterResStream(stream.cSeq);
+        };
+        self.responseStreams[msg.cSeq] = stream;
         tlsStream.emit(msg.toString());
-    }
-});
+        return stream;
+    };
 
-setInterval(function () {
-    var msg = Message();
-    msg.message = "ping";
-    tlsStream.emit(msg.toString());
+    self.unregisterResStream = function (stream) {
+        delete self.responseStreams[stream.cSeq];
+    };
+
+    self.getErrEndStream = function () {
+        return self.msgStream
+            .filter(function () { return false; });
+    };
+
+    self.isActive = function () {
+        return self.running;
+    };
+
+    return self;
+};
+
+tlsStream = tlsStream.create("localhost", 24948);
+cm = ConnectionManager(tlsStream);
+
+cm.getErrEndStream()
+    .onEnd(function () {
+        console.log("end of connection");
+    })
+    .onError(function (err) {
+        console.err("Connection Error: " + err);
+    });
+
+setTimeout(function ping() {
+    if (cm.isActive()) {
+        var msg = Message();
+        msg.message = "ping";
+        var resStream = cm.sendMessage(msg);
+        Kefir.merge([
+            resStream,
+            Kefir.later(1000, "timeouted")
+                .valuesToErrors()
+        ])
+            .endOnError()
+            .valuesToErrors(function (val) {
+                if (val.message !== "pong") {
+                    return {convert: true, error: "wrong response message"};
+                } else {
+                    return {convert: false, error: null};
+                }
+            })
+            .take(1)
+            .onValue(function () {
+                console.log("pong");
+            })
+            .onError(function (err) {
+                console.error("ping err: " + err);
+            })
+            .onEnd(function () {
+                cm.unregisterResStream(resStream);
+            });
+        setTimeout(ping, 3000);
+    }
 }, 3000);
