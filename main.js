@@ -1,6 +1,8 @@
 var tlsStream = require("./tlsStream");
 var streamTrans = require("./streamTransformations");
 var Kefir = require("kefir").Kefir;
+var NodeRSA = require('node-rsa');
+var fs = require('fs');
 
 var SeqGen = {
     seq: 0,
@@ -120,8 +122,6 @@ function ping(connectionManager) {
             .onValue(function (val) {
                 if (val.message !== "pong") {
                     console.error("wrong reposnse type for ping");
-                } else {
-                    console.log("pong");
                 }
             })
             .onError(function (err) {
@@ -133,3 +133,66 @@ function ping(connectionManager) {
     }
 }
 ping(cm);
+
+function chkMsgType(type, payloadSize) {
+    return function (msg) {
+        if (msg.message === 'error' && msg.payload.length === 1) {
+            return {
+                 convert: true,
+                 error: "error from server: " + new Buffer(msg.payload[0], 'base64').toString('utf8')
+             };
+        } else if (msg.message !== type || msg.payload.length !== payloadSize) {
+            return {convert: true, error: "wrong return message: " + msg.message};
+        }
+        return {convert: false, error: null};
+    };
+}
+
+function signup(connectionManager, username, rsaKey) {
+    var b64pubkey = rsaKey.exportKey('pkcs8-public-der').toString('base64');
+
+    return Kefir.later(0, 1)
+        .flatMap(function () {
+            console.log("sending singup");
+            var msg = Message();
+            msg.message = "signup";
+            msg.payload = [username, b64pubkey];
+            var resStream = connectionManager.sendMessage(msg);
+            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+        })
+        .valuesToErrors(chkMsgType('decrypt', 1))
+        .flatMap(function (val) {
+            console.log("sending check");
+            var msg = Message(val);
+            msg.message = "check";
+            msg.payload = [rsaKey.decrypt(val.payload[0], 'base64')];
+            var resStream = connectionManager.sendMessage(msg);
+            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+        })
+        .valuesToErrors(chkMsgType('ok', 0));
+}
+
+var keyStr = fs.readFileSync('client.pem');
+var rsaKey = new NodeRSA(keyStr, {
+  encryptionScheme: {
+    scheme: 'pkcs1_oaep',
+    hash: 'sha256',
+    label: new Buffer("verification", "utf8")
+  },
+  signingScheme: {
+    scheme: 'pss',
+    hash: 'sha256',
+    saltLength: 20
+  }
+});
+
+signup(cm, "testusername", rsaKey)
+    .onError(function (err) {
+        console.error("signup error: ", err);
+    })
+    .onValue(function (val) {
+        console.log("signup success! : ", val.message);
+    })
+    .onEnd(function () {
+        console.log("end of signup procedure");
+    });
