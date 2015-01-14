@@ -10,9 +10,9 @@ var SeqGen = {
     }
 };
 
-var Message = function () {
+var Message = function (serverMessage) {
     var self = {
-        sSeq: null,
+        sSeq: serverMessage !== undefined ? serverMessage.sSeq : null,
         cSeq: SeqGen.get(),
         payload: [],
         message: ""
