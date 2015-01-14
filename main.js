@@ -110,11 +110,11 @@ cm.getErrEndStream()
         console.err("Connection Error: " + err);
     });
 
-function ping() {
-    if (cm.isActive()) {
+function ping(connectionManager) {
+    if (connectionManager.isActive()) {
         var msg = Message();
         msg.message = "ping";
-        var resStream = cm.sendMessage(msg);
+        var resStream = connectionManager.sendMessage(msg);
         streamTrans.toOneResTimeoutingStream(resStream)
             .onValue(function (val) {
                 if (val.message !== "pong") {
@@ -129,4 +129,4 @@ function ping() {
         setTimeout(ping, 3000);
     }
 }
-ping();
+ping(cm);
