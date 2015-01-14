@@ -107,7 +107,7 @@ cm.getErrEndStream()
         console.log("end of connection");
     })
     .onError(function (err) {
-        console.err("Connection Error: " + err);
+        console.error("Connection Error: " + err);
     });
 
 function ping(connectionManager) {
@@ -126,7 +126,9 @@ function ping(connectionManager) {
             .onError(function (err) {
                 console.log("ping err: " + err);
             });
-        setTimeout(ping, 3000);
+        setTimeout(function () {
+            ping(connectionManager);
+        }, 3000);
     }
 }
 ping(cm);
