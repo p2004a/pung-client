@@ -34,7 +34,6 @@ var Message = function () {
 var ConnectionManager = function (tlsStream) {
     var self = {
         responseStreams: {},
-        errorEndStream: Kefir.emitter(),
         msgStream: streamTrans.toMessages(tlsStream).endOnError(),
         running: true
     };
@@ -57,6 +56,10 @@ var ConnectionManager = function (tlsStream) {
 
     self.msgStream.onEnd(function () {
         self.running = false;
+        Object.keys(self.responseStreams).forEach(function (key) {
+            self.responseStreams[key].end();
+        });
+        self.responseStreams = {};
     });
 
     self.sendMessage = function (msg) {
