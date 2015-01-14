@@ -37,7 +37,7 @@ function toMessages(stream) {
     stream = group(stream, 2);
 
     function linesToMessage(lines) {
-        var headerRE = /^s(\d{1,9}) (?:c(\d{1,9}) )?([a-z_]{3,20})$/;
+        var headerRE = /^s(\d{1,9}) (?:c(\d{1,9}) )?([a-z_]{2,20})$/;
         var match = headerRE.exec(lines[0]);
         if (match === null) {
             return {error: "Invalid header format of message from server", value: null};
