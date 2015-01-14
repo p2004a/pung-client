@@ -100,34 +100,23 @@ cm.getErrEndStream()
         console.err("Connection Error: " + err);
     });
 
-setTimeout(function ping() {
+function ping() {
     if (cm.isActive()) {
         var msg = Message();
         msg.message = "ping";
         var resStream = cm.sendMessage(msg);
-        Kefir.merge([
-            resStream,
-            Kefir.later(1000, "timeouted")
-                .valuesToErrors()
-        ])
-            .endOnError()
-            .valuesToErrors(function (val) {
+        streamTrans.toOneResTimeoutingStream(resStream)
+            .onValue(function (val) {
                 if (val.message !== "pong") {
-                    return {convert: true, error: "wrong response message"};
+                    console.error("wrong reposnse type for ping");
                 } else {
-                    return {convert: false, error: null};
+                    console.log("pong");
                 }
             })
-            .take(1)
-            .onValue(function () {
-                console.log("pong");
-            })
             .onError(function (err) {
-                console.error("ping err: " + err);
-            })
-            .onEnd(function () {
-                cm.unregisterResStream(resStream);
+                console.log("ping err: " + err);
             });
         setTimeout(ping, 3000);
     }
-}, 3000);
+}
+ping();

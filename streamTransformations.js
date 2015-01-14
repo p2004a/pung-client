@@ -72,8 +72,22 @@ function toMessages(stream) {
     });
 }
 
+function toOneResTimeoutingStream(resStream, timeout) {
+    return Kefir.merge([
+        resStream,
+        Kefir.later(timeout, "timeouted")
+            .valuesToErrors()
+    ])
+        .endOnError()
+        .take(1)
+        .onEnd(function () {
+            resStream.unregister();
+        });
+}
+
 module.exports = {
     group: group,
     toLineStream: toLineStream,
-    toMessages: toMessages
+    toMessages: toMessages,
+    toOneResTimeoutingStream: toOneResTimeoutingStream
 };
