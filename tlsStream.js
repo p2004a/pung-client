@@ -59,7 +59,7 @@ function createTLSStream(hostname, port) {
         cleartextStream.setEncoding('utf8');
 
         stream.emit = function (val) {
-            cleartextStream.write(value, 'utf8');
+            cleartextStream.write(val, 'utf8');
         };
 
         stream.end = function () {
