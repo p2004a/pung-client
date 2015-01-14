@@ -38,30 +38,6 @@ var ConnectionManager = function (tlsStream) {
         running: true
     };
 
-    self.msgStream.onError(function () {
-        tlsStream.end();
-    });
-
-    self.msgStream.onValue(function (val) {
-        var resStream = self.responseStreams[val.cSeq];
-        if (resStream !== undefined) {
-            resStream.emit(val);
-        } else if (val.message === "ping") {
-            var msg = Message();
-            msg.message = "pong";
-            msg.sSeq = val.sSeq;
-            tlsStream.emit(msg.toString());
-        }
-    });
-
-    self.msgStream.onEnd(function () {
-        self.running = false;
-        Object.keys(self.responseStreams).forEach(function (key) {
-            self.responseStreams[key].end();
-        });
-        self.responseStreams = {};
-    });
-
     self.sendMessage = function (msg) {
         var stream = Kefir.emitter();
         stream.cSeq = msg.cSeq;
@@ -85,6 +61,40 @@ var ConnectionManager = function (tlsStream) {
     self.isActive = function () {
         return self.running;
     };
+
+    self.close = function () {
+        tlsStream.end();
+    };
+
+    self.destroy = function () {
+        if (self.running) {
+            self.running = false;
+            Object.keys(self.responseStreams).forEach(function (key) {
+                self.responseStreams[key].end();
+            });
+            self.responseStreams = {};
+        }
+    };
+
+    self.msgStream.onError(function () {
+        self.close();
+    });
+
+    self.msgStream.onValue(function (val) {
+        var resStream = self.responseStreams[val.cSeq];
+        if (resStream !== undefined) {
+            resStream.emit(val);
+        } else if (val.message === "ping") {
+            var msg = Message();
+            msg.message = "pong";
+            msg.sSeq = val.sSeq;
+            tlsStream.emit(msg.toString());
+        }
+    });
+
+    self.msgStream.onEnd(function () {
+        self.destroy();
+    });
 
     return self;
 };
