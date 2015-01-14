@@ -88,7 +88,8 @@ var ConnectionManager = function (tlsStream) {
             var msg = Message();
             msg.message = "pong";
             msg.sSeq = val.sSeq;
-            tlsStream.emit(msg.toString());
+            var stream = self.sendMessage(msg);
+            self.unregisterResStream(stream);
         }
     });
 
@@ -115,7 +116,7 @@ function ping(connectionManager) {
         var msg = Message();
         msg.message = "ping";
         var resStream = connectionManager.sendMessage(msg);
-        streamTrans.toOneResTimeoutingStream(resStream)
+        streamTrans.toOneResTimeoutingStream(resStream, 500)
             .onValue(function (val) {
                 if (val.message !== "pong") {
                     console.error("wrong reposnse type for ping");
