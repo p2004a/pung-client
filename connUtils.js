@@ -9,13 +9,17 @@ var SeqGen = {
     }
 };
 
-var Message = function (serverMessage) {
+var Message = function (serverMessage, message) {
     var self = {
         sSeq: serverMessage ? serverMessage.sSeq : null,
         cSeq: SeqGen.get(),
         payload: [],
-        message: ""
+        message: message ? message : ""
     };
+
+    for (var i = 2; i < arguments.length; i += 1) {
+        self.payload.push(arguments[i]);
+    }
 
     self.toString = function () {
         var res = "c" + self.cSeq + " ";
