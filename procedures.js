@@ -24,17 +24,8 @@ function ping(connectionManager) {
         .valuesToErrors(chkMsgType('pong', 0));
 }
 
-function signup(connectionManager, username, rsaKey) {
-    var b64pubkey = rsaKey.exportKey('pkcs8-public-der').toString('base64');
-
-    return Kefir.later(0, 1)
-        .flatMap(function () {
-            var msg = cu.Message();
-            msg.message = "signup";
-            msg.payload = [username, b64pubkey];
-            var resStream = connectionManager.sendMessage(msg);
-            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
-        })
+function verify(connectionManager, rsaKey, stream) {
+    return stream
         .valuesToErrors(chkMsgType('decrypt', 1))
         .flatMap(function (val) {
             var msg = cu.Message(val);
@@ -46,24 +37,28 @@ function signup(connectionManager, username, rsaKey) {
         .valuesToErrors(chkMsgType('ok', 0));
 }
 
+function signup(connectionManager, username, rsaKey) {
+    var b64pubkey = rsaKey.exportKey('pkcs8-public-der').toString('base64');
+
+    return verify(connectionManager, rsaKey, Kefir.later(0, 1)
+        .flatMap(function () {
+            var msg = cu.Message();
+            msg.message = "signup";
+            msg.payload = [username, b64pubkey];
+            var resStream = connectionManager.sendMessage(msg);
+            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+        }));
+}
+
 function login(connectionManager, username, rsaKey) {
-    return Kefir.later(0, 1)
+    return verify(connectionManager, rsaKey, Kefir.later(0, 1)
         .flatMap(function () {
             var msg = cu.Message();
             msg.message = "login";
             msg.payload = [username];
             var resStream = connectionManager.sendMessage(msg);
             return streamTrans.toOneResTimeoutingStream(resStream, 1000);
-        })
-        .valuesToErrors(chkMsgType('decrypt', 1))
-        .flatMap(function (val) {
-            var msg = cu.Message(val);
-            msg.message = "check";
-            msg.payload = [rsaKey.decrypt(val.payload[0], 'base64')];
-            var resStream = connectionManager.sendMessage(msg);
-            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
-        })
-        .valuesToErrors(chkMsgType('ok', 0));
+        }));
 }
 
 function logout(connectionManager) {
