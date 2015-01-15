@@ -16,52 +16,52 @@ function chkMsgType(type, payloadSize) {
     };
 }
 
-function ping(connectionManager) {
+function ping(cm) {
     var msg = cu.Message();
     msg.message = "ping";
-    var resStream = connectionManager.sendMessage(msg);
+    var resStream = cm.sendMessage(msg);
     return streamTrans.toOneResTimeoutingStream(resStream, 500)
         .valuesToErrors(chkMsgType('pong', 0));
 }
 
-function verify(connectionManager, rsaKey, stream) {
+function verify(cm, rsaKey, stream) {
     return stream
         .valuesToErrors(chkMsgType('decrypt', 1))
         .flatMap(function (val) {
             var msg = cu.Message(val);
             msg.message = "check";
             msg.payload = [rsaKey.decrypt(val.payload[0], 'base64')];
-            var resStream = connectionManager.sendMessage(msg);
+            var resStream = cm.sendMessage(msg);
             return streamTrans.toOneResTimeoutingStream(resStream, 1000);
         })
         .valuesToErrors(chkMsgType('ok', 0));
 }
 
-function signup(connectionManager, username, rsaKey) {
+function signup(cm, username, rsaKey) {
     var b64pubkey = rsaKey.exportKey('pkcs8-public-der').toString('base64');
 
-    return verify(connectionManager, rsaKey, Kefir.later(0, 1)
+    return verify(cm, rsaKey, Kefir.later(0, 1)
         .flatMap(function () {
             var msg = cu.Message();
             msg.message = "signup";
             msg.payload = [username, b64pubkey];
-            var resStream = connectionManager.sendMessage(msg);
+            var resStream = cm.sendMessage(msg);
             return streamTrans.toOneResTimeoutingStream(resStream, 1000);
         }));
 }
 
-function login(connectionManager, username, rsaKey) {
-    return verify(connectionManager, rsaKey, Kefir.later(0, 1)
+function login(cm, username, rsaKey) {
+    return verify(cm, rsaKey, Kefir.later(0, 1)
         .flatMap(function () {
             var msg = cu.Message();
             msg.message = "login";
             msg.payload = [username];
-            var resStream = connectionManager.sendMessage(msg);
+            var resStream = cm.sendMessage(msg);
             return streamTrans.toOneResTimeoutingStream(resStream, 1000);
         }));
 }
 
-function logout(connectionManager) {
+function logout(cm) {
     var msg = cu.Message();
     msg.message = "logout";
     cm.sendMessage(msg).unregister();
