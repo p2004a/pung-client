@@ -2,8 +2,10 @@
 <html ng-app="pung-client">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Pung</title>
 
+    <link rel="stylesheet" href="bower_components/angular-material/angular-material.css">
     <link href="style.css" rel="stylesheet">
 
     <!-- fix needed to make angular router work in node-webkit -->
@@ -16,6 +18,7 @@
     </script>
 
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-messages/angular-messages.js"></script>
     <script src="bower_components/angular-aria/angular-aria.js"></script>
     <script src="bower_components/angular-animate/angular-animate.js"></script>
     <script src="bower_components/hammerjs/hammer.js"></script>
@@ -25,7 +28,9 @@
     <script type="text/javascript" src="ui.js"></script>
   </head>
   <body ng-controller="UIController">
-    <a href="login">login</a> <a href="signup">signup</a> <a href="communicator">communicator</a><br>
-    <div ng-view></div>
+    <div class="view" ng-view></div>
+    <div class="foot">
+      Created by p2004a
+    </div>
   </body>
 </html>

@@ -1,10 +1,9 @@
 var tlsStream = require("./tlsStream");
 var streamTrans = require("./streamTransformations");
 var Kefir = require("kefir").Kefir;
-var NodeRSA = require('node-rsa');
-var fs = require('fs');
 var procs = require('./procedures');
 var cu = require('./connUtils');
+var utils = require('./utils');
 
 tlsStream = tlsStream.create("localhost", 24948);
 cm = cu.ConnectionManager(tlsStream);
@@ -28,19 +27,7 @@ function loopPing() {
 }
 loopPing(cm);
 
-var keyStr = fs.readFileSync('client.pem');
-var rsaKey = new NodeRSA(keyStr, {
-  encryptionScheme: {
-    scheme: 'pkcs1_oaep',
-    hash: 'sha256',
-    label: new Buffer("verification", "utf8")
-  },
-  signingScheme: {
-    scheme: 'pss',
-    hash: 'sha256',
-    saltLength: 20
-  }
-});
+var rsaKey = utils.loadRsaKey('client.pem');
 
 procs.signup(cm, "testusername", rsaKey)
     .map(function () {

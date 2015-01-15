@@ -1,4 +1,63 @@
 html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
+}
+
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+.view {
+    position: relative;
+    height: calc(100% - 22px);
+    width: 100%;
+}
+
+.foot {
+    height: 22px;
+    padding-top: 3px;
+    font-size: 12px;
+    text-align: center;
+    color: #999;
+}
+
+.view-child {
+    width: 100%;
+    height: 100%;
+}
+
+.form-div {
+    width: 300px;
+}
+
+.login-button-box {
+    margin-top: 8px;
+}
+
+.error-boc {
+    margin-top: 2px !important;
+}
+
+.error-box-placeholder {
+    height: 22px;
+}
+
+.error-box > span {
+    color: rgb(244,67,54);
+    font-size: 12px;
+}
+
+.keyfile-button {
+    line-height: 35px;
+    display: block;
+    text-align: left;
+}
+
+.file-icon {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    position: relative;
+    top: 4px;
 }
