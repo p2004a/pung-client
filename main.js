@@ -172,6 +172,28 @@ function signup(connectionManager, username, rsaKey) {
         .valuesToErrors(chkMsgType('ok', 0));
 }
 
+function login(connectionManager, username, rsaKey) {
+    return Kefir.later(0, 1)
+        .flatMap(function () {
+            console.log("sending login");
+            var msg = Message();
+            msg.message = "login";
+            msg.payload = [username];
+            var resStream = connectionManager.sendMessage(msg);
+            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+        })
+        .valuesToErrors(chkMsgType('decrypt', 1))
+        .flatMap(function (val) {
+            console.log("sending check");
+            var msg = Message(val);
+            msg.message = "check";
+            msg.payload = [rsaKey.decrypt(val.payload[0], 'base64')];
+            var resStream = connectionManager.sendMessage(msg);
+            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+        })
+        .valuesToErrors(chkMsgType('ok', 0));
+}
+
 var keyStr = fs.readFileSync('client.pem');
 var rsaKey = new NodeRSA(keyStr, {
   encryptionScheme: {
@@ -187,12 +209,21 @@ var rsaKey = new NodeRSA(keyStr, {
 });
 
 signup(cm, "testusername", rsaKey)
+    .map(function (val) {
+        var msg = Message(val);
+        msg.message = "logout";
+        cm.sendMessage(msg).unregister();
+        return true;
+    })
+    .flatMap(function () {
+        return login(cm, "testusername", rsaKey);
+    })
     .onError(function (err) {
-        console.error("signup error: ", err);
+        console.error("error: ", err);
     })
     .onValue(function (val) {
-        console.log("signup success! : ", val.message);
+        console.log("success! : ", val.message);
     })
     .onEnd(function () {
-        console.log("end of signup procedure");
+        console.log("end of procedure");
     });
