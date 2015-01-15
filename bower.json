@@ -1,0 +1,14 @@
+{
+  "name": "pung-client",
+  "version": "0.0.0",
+  "homepage": "https://github.com/p2004a/pung-client",
+  "authors": [
+    "Marek Rusinowski <marekrusinowski@gmail.com>"
+  ],
+  "private": true,
+  "dependencies": {
+    "angular": "~1.3.9",
+    "angular-route": "~1.3.9",
+    "angular-material": "~0.6.1"
+  }
+}

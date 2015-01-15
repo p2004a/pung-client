@@ -1,8 +1,13 @@
 {
     "name": "pung-client",
     "version": "0.0.1",
+    "author": "Marek Rusinowski <marekrusinowski@gmail.com>",
     "private": true,
     "main": "main.html",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/p2004a/pung-client"
+        },
     "window": {
         "toolbar": false,
         "width": 800,
