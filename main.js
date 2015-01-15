@@ -43,7 +43,9 @@ var rsaKey = new NodeRSA(keyStr, {
 });
 
 procs.signup(cm, "testusername", rsaKey)
-    .map(procs.logout)
+    .map(function () {
+        procs.logout(cm);
+    })
     .flatMap(function () {
         return procs.login(cm, "testusername", rsaKey);
     })
