@@ -92,11 +92,7 @@ var ConnectionManager = function (tlsStream) {
         if (resStream !== undefined) {
             resStream.emit(val);
         } else if (val.message === "ping") {
-            var msg = Message();
-            msg.message = "pong";
-            msg.sSeq = val.sSeq;
-            var stream = self.sendMessage(msg);
-            self.unregisterResStream(stream);
+            self.sendFAFMessage(Message(val, "pong"));
         }
     });
 

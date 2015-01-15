@@ -16,9 +16,13 @@ function chkMsgType(type, payloadSize) {
     };
 }
 
+function sendOneResMsg(cm, timeout, msg) {
+    var resStream = cm.sendMessage(msg);
+    return streamTrans.toOneResTimeoutingStream(resStream, timeout);
+}
+
 function ping(cm) {
-    var msg = cu.Message();
-    msg.message = "ping";
+    var msg = cu.Message(null, "ping");
     var resStream = cm.sendMessage(msg);
     return streamTrans.toOneResTimeoutingStream(resStream, 500)
         .valuesToErrors(chkMsgType('pong', 0));
@@ -28,11 +32,8 @@ function verify(cm, rsaKey, stream) {
     return stream
         .valuesToErrors(chkMsgType('decrypt', 1))
         .flatMap(function (val) {
-            var msg = cu.Message(val);
-            msg.message = "check";
-            msg.payload = [rsaKey.decrypt(val.payload[0], 'base64')];
-            var resStream = cm.sendMessage(msg);
-            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+            var msg = cu.Message(val, "check", rsaKey.decrypt(val.payload[0], 'base64'));
+            return sendOneResMsg(cm, 700, msg);
         })
         .valuesToErrors(chkMsgType('ok', 0));
 }
@@ -42,29 +43,22 @@ function signup(cm, username, rsaKey) {
 
     return verify(cm, rsaKey, Kefir.later(0, 1)
         .flatMap(function () {
-            var msg = cu.Message();
-            msg.message = "signup";
-            msg.payload = [username, b64pubkey];
-            var resStream = cm.sendMessage(msg);
-            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+            var msg = cu.Message(null, "signup", username, b64pubkey);
+            return sendOneResMsg(cm, 700, msg);
         }));
 }
 
 function login(cm, username, rsaKey) {
     return verify(cm, rsaKey, Kefir.later(0, 1)
         .flatMap(function () {
-            var msg = cu.Message();
-            msg.message = "login";
-            msg.payload = [username];
-            var resStream = cm.sendMessage(msg);
-            return streamTrans.toOneResTimeoutingStream(resStream, 1000);
+            var msg = cu.Message(null, "login", username);
+            return sendOneResMsg(cm, 700, msg);
         }));
 }
 
 function logout(cm) {
-    var msg = cu.Message();
-    msg.message = "logout";
-    cm.sendMessage(msg).unregister();
+    var msg = cu.Message(null, "logout");
+    cm.sendFAFMessage(msg);
     return true;
 }
 
