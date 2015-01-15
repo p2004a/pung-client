@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html ng-app="pung-client">
+  <head>
+    <meta charset="utf-8">
+    <title>Pung</title>
+
+    <link href="style.css" rel="stylesheet">
+
+    <!-- fix needed to make angular router work in node-webkit -->
+    <script type="text/javascript">
+      (function () {
+        var base = document.createElement('base');
+        base.setAttribute('href', window.location.pathname);
+        var elem = document.getElementsByTagName('head')[0].appendChild(base);
+      })();
+    </script>
+
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/hammerjs/hammer.js"></script>
+    <script src="bower_components/angular-material/angular-material.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+
+    <script type="text/javascript" src="ui.js"></script>
+  </head>
+  <body ng-controller="UIController">
+    <a href="login">login</a> <a href="signup">signup</a> <a href="communicator">communicator</a><br>
+    <div ng-view></div>
+  </body>
+</html>
