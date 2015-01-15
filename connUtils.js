@@ -52,6 +52,10 @@ var ConnectionManager = function (tlsStream) {
         return stream;
     };
 
+    self.sendFAFMessage = function (msg) {
+        tlsStream.emit(msg.toString());
+    };
+
     self.unregisterResStream = function (stream) {
         delete self.responseStreams[stream.cSeq];
     };
