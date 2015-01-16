@@ -1,5 +1,5 @@
 <div class="view-child" layout="column" layout-align="center center" ng-show="notLoading">
-  <form name="loginForm" novalidate>
+  <form name="entryForm" novalidate>
     <div class="form-div" layout="column" layout-align="center">
       <md-input-container>
         <label>Username</label>
@@ -8,25 +8,25 @@
           ng-model="username"
           required
           pattern="^[a-z]{3,20}@(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$">
-        <div class="error-box" ng-messages="loginForm.username.$error" ng-show="showLoginErrors">
+        <div class="error-box" ng-messages="entryForm.username.$error" ng-show="showEntryFormErrors">
           <span ng-message="required">You have to input username!</span>
           <span ng-message="pattern">You have to input valid (user@host) username!</span>
         </div>
       </md-input-container>
 
-      <input id="loginFileChooser" style="display:none" type="file" accept=".pem,.key" required>
+      <input id="entryFormFileChooser" style="display:none" type="file" accept=".pem,.key" required>
       <input type="hidden" name="keyfile" ng-model="keyfile" required pattern=".*\.(pem|key)">
       <md-button class="keyfile-button" ng-click="selectFile()">
       <object class="file-icon" data="img/icons/ic_insert_drive_file_24px.svg"></object> {{keyfile | filefrompath}}
       </md-button>
       <div class="error-box-placeholder">
-        <div class="error-box" ng-messages="loginForm.keyfile.$error" ng-show="showLoginErrors">
+        <div class="error-box" ng-messages="entryForm.keyfile.$error" ng-show="showEntryFormErrors">
           <span ng-message="required">You have to select keyfile!</span>
           <span ng-message="pattern">You have to select keyfile!</span>
         </div>
       </div>
 
-      <div class="login-button-box" layout="row" layout-align="center">
+      <div class="entry-button-box" layout="row" layout-align="center">
         <md-button flex="50" ng-click="tryLogin()" class="md-raised">login</md-button>
       </div>
     </div>

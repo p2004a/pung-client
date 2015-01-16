@@ -23,12 +23,12 @@ pungClient.controller('UIController', function ($scope) {
     console.log("UIController");
 });
 
-pungClient.controller('LoginController', function ($scope, globalStore, $mdDialog, $location, $timeout) {
-    console.log("LoginController");
+pungClient.controller('EntryController', function ($scope, globalStore, $mdDialog, $location, $timeout) {
+    console.log("EntryController");
     $scope.keyfile = "key file";
 
     $scope.selectFile = function () {
-        var chooser = document.querySelector("#loginFileChooser");
+        var chooser = document.querySelector("#entryFormFileChooser");
         var listener = function (evt) {
             var path = this.value;
             $scope.$apply(function () {
@@ -44,7 +44,7 @@ pungClient.controller('LoginController', function ($scope, globalStore, $mdDialo
 
     $scope.resetFileChooser = function () {
         $scope.keyfile = "key file";
-        document.querySelector("#loginFileChooser").value = null;
+        document.querySelector("#entryFormFileChooser").value = null;
     };
 
     $scope.errorDialog = function (message) {
@@ -57,9 +57,9 @@ pungClient.controller('LoginController', function ($scope, globalStore, $mdDialo
         );
     };
 
-    $scope.showLoginErrors = false;
+    $scope.showEntryFormErrors = false;
     $scope.tryLogin = function () {
-        if ($scope.loginForm.$valid) {
+        if ($scope.entryForm.$valid) {
             var rsaKey = null;
             try {
                 var utils = require('./utils');
@@ -67,11 +67,11 @@ pungClient.controller('LoginController', function ($scope, globalStore, $mdDialo
             } catch (e) {
                 $scope.resetFileChooser();
                 $scope.errorDialog('Cannot load or parse given keyfile.');
-                $scope.showLoginErrors = false;
+                $scope.showEntryFormErrors = false;
             }
             $scope.loginProcedure($scope.username, rsaKey);
         } else {
-            $scope.showLoginErrors = true;
+            $scope.showEntryFormErrors = true;
         }
     };
 
@@ -121,10 +121,6 @@ pungClient.controller('LoginController', function ($scope, globalStore, $mdDialo
     };
 });
 
-pungClient.controller('SignUpController', function ($scope, globalStore, $location) {
-    console.log("SignUpController");
-});
-
 pungClient.controller('CommunicatorController', function ($scope, globalStore, $location) {
     console.log("CommunicatorController");
     angular.extend($scope, globalStore.load());
@@ -132,20 +128,16 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
 pungClient.config(function($routeProvider, $locationProvider) {
     $routeProvider
-        .when('/login', {
-            templateUrl: 'view/login.html',
-            controller: 'LoginController',
-        })
-        .when('/signup', {
-            templateUrl: 'view/signup.html',
-            controller: 'SignUpController'
+        .when('/entry', {
+            templateUrl: 'view/entry.html',
+            controller: 'EntryController',
         })
         .when('/communicator', {
             templateUrl: 'view/communicator.html',
             controller: 'CommunicatorController'
         })
         .otherwise({
-            redirectTo: '/login'
+            redirectTo: '/entry'
         });
 
     $locationProvider.html5Mode(true);
