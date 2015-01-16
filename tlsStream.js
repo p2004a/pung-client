@@ -46,7 +46,7 @@ function createTLSStream(hostname, port) {
     };
 
     var socket = net.connect({
-        host: "localhost",
+        host: hostname,
         port: 24948,
         allowHalfOpen: false
     }, function () {
