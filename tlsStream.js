@@ -53,6 +53,11 @@ function createTLSStream(hostname, port, timeout) {
             };
 
             stream.end = function () {
+                if (streamData.emitter) {
+                    streamData.emitter.end();
+                } else {
+                    streamData.endReadStream = true;
+                }
                 cleartextStream.end();
             };
 
