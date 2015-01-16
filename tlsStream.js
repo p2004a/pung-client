@@ -2,7 +2,7 @@ var net = require("net");
 var tls = require("tls");
 var Kefir = require("kefir").Kefir;
 
-function createTLSStream(hostname, port) {
+function createTLSStream(hostname, port, timeout) {
     'use strict';
 
     var streamData = {
@@ -107,6 +107,14 @@ function createTLSStream(hostname, port) {
             streamData.endReadStream = true;
         }
     });
+
+    if (timeout) {
+        setTimeout(function () {
+            connectedStream.error('timeout');
+            connectedStream.end();
+            socket.end();
+        }, timeout);
+    }
 
     return connectedStream;
 }
