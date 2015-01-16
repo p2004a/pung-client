@@ -73,6 +73,7 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
                 $scope.resetFileChooser();
                 $scope.errorDialog('Cannot load or parse given keyfile.');
                 $scope.showEntryFormErrors = false;
+                return;
             }
             $scope.procedure($scope.username, rsaKey, what, toPretty[what]);
         } else {
