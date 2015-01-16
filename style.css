@@ -33,8 +33,13 @@ html, body {
     width: 300px;
 }
 
-.login-button-box {
+.entry-button-box {
     margin-top: 8px;
+}
+
+.entry-button-box > * {
+    margin-left: 6px;
+    margin-right: 6px;
 }
 
 .error-box-placeholder {

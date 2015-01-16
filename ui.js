@@ -58,7 +58,12 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
     };
 
     $scope.showEntryFormErrors = false;
-    $scope.tryLogin = function () {
+    $scope.try = function (what) {
+        var toPretty = {
+            "login": "Login",
+            "signup": "SignUp"
+        };
+
         if ($scope.entryForm.$valid) {
             var rsaKey = null;
             try {
@@ -69,14 +74,14 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
                 $scope.errorDialog('Cannot load or parse given keyfile.');
                 $scope.showEntryFormErrors = false;
             }
-            $scope.loginProcedure($scope.username, rsaKey);
+            $scope.procedure($scope.username, rsaKey, what, toPretty[what]);
         } else {
             $scope.showEntryFormErrors = true;
         }
     };
 
     $scope.notLoading = true;
-    $scope.loginProcedure = function (username, rsaKey) {
+    $scope.procedure = function (username, rsaKey, name, prettyName) {
         $scope.notLoading = false;
 
         var Kefir = require("kefir").Kefir;
@@ -92,11 +97,11 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
             .onValue(function (stream) {
                 var cm = cu.ConnectionManager(stream);
 
-                procs.login(cm, user, rsaKey)
+                procs[name](cm, user, rsaKey)
                     .onError(function (error) {
                         console.error(error);
                         $timeout(function () {
-                            $scope.errorDialog("Login procedure failed: " + error);
+                            $scope.errorDialog(prettyName + " procedure failed: " + error);
                             $scope.notLoading = true;
                         });
                     })
