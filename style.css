@@ -20,6 +20,7 @@ html, body {
     font-size: 12px;
     text-align: center;
     color: #999;
+    -webkit-user-select: none;
 }
 
 .view-child {
@@ -28,15 +29,12 @@ html, body {
 }
 
 .form-div {
+    -webkit-user-select: none;
     width: 300px;
 }
 
 .login-button-box {
     margin-top: 8px;
-}
-
-.error-boc {
-    margin-top: 2px !important;
 }
 
 .error-box-placeholder {

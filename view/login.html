@@ -1,4 +1,4 @@
-<div class="view-child" layout="column" layout-align="center center">
+<div class="view-child" layout="column" layout-align="center center" ng-show="notLoading">
   <form name="loginForm" novalidate>
     <div class="form-div" layout="column" layout-align="center">
       <md-input-container>
@@ -31,4 +31,7 @@
       </div>
     </div>
   </form>
+</div>
+<div class="view-child" layout="column" layout-align="center center" ng-show="!notLoading">
+  <md-progress-circular class="md-hue-2" md-mode="indeterminate"></md-progress-circular>
 </div>
