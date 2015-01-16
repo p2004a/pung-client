@@ -7,12 +7,13 @@ function createTLSStream(hostname, port) {
 
     var streamData = {
         readBuffer: "",
-        writeBuffer: "",
-        endWriteStream: false,
         endReadStream: false,
         readErrors: [],
         emitter: null
     };
+
+    var connectedStream = Kefir.emitter();
+    var connected = false;
 
     var stream = Kefir.fromBinder(function (emitter) {
         streamData.emitter = emitter;
@@ -37,14 +38,6 @@ function createTLSStream(hostname, port) {
         };
     });
 
-    stream.emit = function (val) {
-        streamData.writeBuffer += val;
-    };
-
-    stream.end = function () {
-        streamData.endWriteStream = true;
-    };
-
     var socket = net.connect({
         host: hostname,
         port: 24948,
@@ -54,52 +47,51 @@ function createTLSStream(hostname, port) {
             socket: socket,
             rejectUnauthorized: false,
             servername: "localhost"
+        }, function () {
+            stream.emit = function (val) {
+                cleartextStream.write(val, 'utf8');
+            };
+
+            stream.end = function () {
+                cleartextStream.end();
+            };
+
+            cleartextStream.on('data', function(data) {
+                if (streamData.emitter) {
+                    streamData.emitter.emit(data);
+                } else {
+                    streamData.readBuffer += data;
+                }
+            });
+
+            connected = true;
+            connectedStream.emit(stream);
+            connectedStream.end();
         });
 
         cleartextStream.setEncoding('utf8');
-
-        stream.emit = function (val) {
-            cleartextStream.write(val, 'utf8');
-        };
-
-        stream.end = function () {
-            cleartextStream.end();
-        };
-
-        cleartextStream.on('data', function(data) {
-            if (streamData.emitter) {
-                streamData.emitter.emit(data);
-            } else {
-                streamData.readBuffer += data;
-            }
-        });
 
         cleartextStream.on('end', function() {
             socket.end();
         });
 
         cleartextStream.on('error', function (err) {
-            if (streamData.emitter) {
+            if (!connected) {
+                connectedStream.error(err.message);
+            } else if (streamData.emitter) {
                 streamData.emitter.error(err);
             } else {
                 streamData.readErrors.push(err);
             }
             socket.end();
         });
-
-        if (streamData.writeBuffer.length > 0) {
-            stream.emit(streamData.writeBuffer);
-            streamData.writeBuffer = null;
-        }
-
-        if (streamData.endWriteStream) {
-            stream.end();
-        }
     });
     socket.setKeepAlive(true, 1000 * 30);
 
     socket.on('error', function (err) {
-        if (streamData.emitter) {
+        if (!connected) {
+            connectedStream.error(err.message);
+        } else if (streamData.emitter) {
             streamData.emitter.error(err.message);
         } else {
             streamData.readErrors.push(err.message);
@@ -107,14 +99,16 @@ function createTLSStream(hostname, port) {
     });
 
     socket.on('close', function () {
-        if (streamData.emitter) {
+        if (!connected) {
+            connectedStream.end();
+        } if (streamData.emitter) {
             streamData.emitter.end();
         } else {
             streamData.endReadStream = true;
         }
     });
 
-    return stream;
+    return connectedStream;
 }
 
 module.exports = {
