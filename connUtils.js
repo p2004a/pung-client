@@ -41,9 +41,10 @@ var ConnectionManager = function (tlsStream) {
         running: true
     };
 
-    self.sendMessage = function (msg) {
+    self.sendMessage = function (msg, dontGetConnectionErrors) {
         var stream = Kefir.emitter();
         stream.cSeq = msg.cSeq;
+        stream.dontGetConnectionErrors = dontGetConnectionErrors;
         stream.unregister = function () {
             self.unregisterResStream(stream.cSeq);
         };
@@ -73,17 +74,21 @@ var ConnectionManager = function (tlsStream) {
         tlsStream.end();
     };
 
-    self.destroy = function () {
+    self.destroy = function (error) {
         if (self.running) {
             self.running = false;
             Object.keys(self.responseStreams).forEach(function (key) {
+                if (error && !self.responseStreams[key].dontGetConnectionErrors) {
+                    self.responseStreams[key].error(error);
+                }
                 self.responseStreams[key].end();
             });
             self.responseStreams = {};
         }
     };
 
-    self.msgStream.onError(function () {
+    self.msgStream.onError(function (err) {
+        self.destroy();
         self.close();
     });
 
