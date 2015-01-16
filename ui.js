@@ -7,14 +7,14 @@ pungClient.filter('filefrompath', function () {
     };
 });
 
-pungClient.factory('cmStore', function() {
-    var cm = null;
+pungClient.factory('globalStore', function() {
+    var val = null;
     return {
-        store: function (val) {
-            cm = val;
+        store: function (newVal) {
+            val = newVal;
         },
         load: function () {
-            return cm;
+            return val;
         }
     };
 });
@@ -23,7 +23,7 @@ pungClient.controller('UIController', function ($scope) {
     console.log("UIController");
 });
 
-pungClient.controller('LoginController', function ($scope, cmStore, $mdDialog, $location, $timeout) {
+pungClient.controller('LoginController', function ($scope, globalStore, $mdDialog, $location, $timeout) {
     console.log("LoginController");
     $scope.keyfile = "key file";
 
@@ -96,13 +96,17 @@ pungClient.controller('LoginController', function ($scope, cmStore, $mdDialog, $
                     .onError(function (error) {
                         console.error(error);
                         $timeout(function () {
-                            $scope.errorDialog("Login procedure with server failed: " + error);
+                            $scope.errorDialog("Login procedure failed: " + error);
                             $scope.notLoading = true;
                         });
                     })
                     .onValue(function () {
                         $timeout(function () {
-                            cmStore.store(cm);
+                            globalStore.store({
+                                cm: cm,
+                                username: user,
+                                rsaKey: rsaKey
+                            });
                             $location.path('/communicator');
                         });
                     });
@@ -117,15 +121,13 @@ pungClient.controller('LoginController', function ($scope, cmStore, $mdDialog, $
     };
 });
 
-pungClient.controller('SignUpController', function ($scope, cmStore, $location) {
+pungClient.controller('SignUpController', function ($scope, globalStore, $location) {
     console.log("SignUpController");
 });
 
-pungClient.controller('CommunicatorController', function ($scope, cmStore, $location) {
+pungClient.controller('CommunicatorController', function ($scope, globalStore, $location) {
     console.log("CommunicatorController");
-
-    var cm = cmStore.load();
-    cm.close();
+    angular.extend($scope, globalStore.load());
 });
 
 pungClient.config(function($routeProvider, $locationProvider) {
