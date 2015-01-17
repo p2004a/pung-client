@@ -124,7 +124,8 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
                         $timeout(function () {
                             globalStore.store({
                                 cm: cm,
-                                username: user,
+                                user: user,
+                                host: host,
                                 rsaKey: rsaKey
                             });
                             $location.path('/communicator');
@@ -143,7 +144,25 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
 
 pungClient.controller('CommunicatorController', function ($scope, globalStore, $location, $mdSidenav, $timeout, $mdDialog) {
     console.log("CommunicatorController");
-    angular.extend($scope, globalStore.load());
+    var data = globalStore.load();
+    var cm = data.cm;
+    var rsaKey = data.rsaKey;
+    $scope.user = data.user;
+    $scope.host = data.host;
+
+    cm.getErrEndStream()
+        .onError(function (err) {
+            $timeout(function () {
+                $scope.errorDialog("Connection error: " + err);
+            });
+        })
+        .onEnd(function () {
+            $timeout(function () {
+                $location.path('/entry');
+            });
+        });
+
+    var procs = require('./procedures');
 
     $scope.activeChat = -1;
 
@@ -151,15 +170,19 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     ];
 
     $scope.friends = [
-        {name: 'marek'},
-        {name: 'andrzej'},
-        {name: 'juzek'}
     ];
 
     $scope.friendsMessages = {
-        'marek': [],
-        'andrzej': [],
-        'juzek': []
+    };
+
+    $scope.errorDialog = function (message) {
+        $mdDialog.show(
+            $mdDialog.alert()
+                .title('Error')
+                .content(message)
+                .ariaLabel('Error')
+                .ok('ok')
+        );
     };
 
     $scope.getTime = function () {
@@ -186,7 +209,8 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     };
 
     $scope.logout = function () {
-        $location.path('/entry');
+        procs.logout(cm);
+        cm.close();
     };
 
     $scope.openChat = function (friendName) {
@@ -254,7 +278,7 @@ pungClient.config(function($routeProvider, $locationProvider) {
             controller: 'CommunicatorController'
         })
         .otherwise({
-            redirectTo: '/communicator'
+            redirectTo: '/entry'
         });
 
     $locationProvider.html5Mode(true);

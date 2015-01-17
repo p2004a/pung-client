@@ -1,7 +1,8 @@
 <div class="view-child" layout="row">
   <div class="main-container">
     <md-content layout="row" class="top-menu">
-        <md-button ng-click="logout()">logout</md-button>
+      <span class="loggedas" flex>{{user}}@{{host}}</span>
+      <md-button ng-click="logout()">logout</md-button>
     </md-content>
     <md-tabs md-selected="activeChat" class="chat-tabs">
       <md-tab ng-repeat="chat in chats" label="{{chat.title}}">
