@@ -1,0 +1,22 @@
+<md-dialog aria-label="Add Friend">
+  <md-content class="md-padding">
+    <form name="addFriendForm" novalidate>
+      <md-input-container>
+        <label>Username</label>
+        <input
+          name="username"
+          ng-model="username"
+          required
+          pattern="^[a-z][a-z_0-9]{2,19}@(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$">
+        <div class="error-box" ng-messages="addFriendForm.username.$error" ng-show="showFormErrors">
+          <span ng-message="required">You have to input friend username!</span>
+          <span ng-message="pattern">Username format: "user@host" !</span>
+        </div>
+      </md-input-container>
+      <div class="entry-button-box" layout="row" layout-align="center">
+        <md-button flex="40" ng-click="answer()" class="md-raised">add</md-button>
+        <md-button flex="40" ng-click="cancel()" class="md-raised">cancel</md-button>
+      </div>
+    </form>
+  </md-content>
+</md-dialog>

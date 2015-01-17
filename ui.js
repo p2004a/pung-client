@@ -141,7 +141,7 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
     };
 });
 
-pungClient.controller('CommunicatorController', function ($scope, globalStore, $location, $mdSidenav, $timeout) {
+pungClient.controller('CommunicatorController', function ($scope, globalStore, $location, $mdSidenav, $timeout, $mdDialog) {
     console.log("CommunicatorController");
     angular.extend($scope, globalStore.load());
 
@@ -210,6 +210,35 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
         var index = $scope.chats.indexOf(chat);
         if (index !== -1) {
             $scope.chats.splice(index, 1);
+        }
+    };
+
+    $scope.addFriend = function () {
+        $mdDialog.show({
+            controller: 'AddFriend',
+            templateUrl: 'view/addFriend.html'
+        })
+        .then(function(friendName) {
+            console.log(friendName);
+        });
+    };
+});
+
+pungClient.controller('AddFriend', function ($scope, $mdDialog) {
+    $scope.hide = function() {
+        $mdDialog.cancel();
+    };
+
+    $scope.cancel = function() {
+        $mdDialog.cancel();
+    };
+
+    $scope.showFormErrors = false;
+    $scope.answer = function() {
+        if ($scope.addFriendForm.$valid) {
+            $mdDialog.hide($scope.username);
+        } else {
+            $scope.showFormErrors = true;
         }
     };
 });
