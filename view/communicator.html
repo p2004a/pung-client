@@ -1,3 +1,43 @@
-<div class="view-child">
-    communicator
+<div class="view-child" layout="row">
+  <div class="main-container">
+    <md-content layout="row" class="top-menu">
+        <md-button ng-click="logout()">logout</md-button>
+    </md-content>
+    <md-tabs md-selected="activeChat" class="chat-tabs">
+      <md-tab ng-repeat="chat in chats" label="{{chat.title}}">
+        <md-tab-label layout="row">
+          <span ng-bind="chat.title"></span>
+          <md-button aria-label="remove" ng-click="closeChat(chat)">×</md-button>
+        </md-tab-label>
+        <md-content class="messages-container" scroll-glue>
+          <md-list>
+            <md-item ng-repeat="msg in chat.messages">
+              <md-item-content>
+                <div class="md-tile-content">
+                  <h3>{{msg.author}}</h3>
+                  <h4>{{msg.time | date : 'mediumTime'}}</h4>
+                  <pre>{{msg.body}}</pre>
+                </div>
+              </md-item-content>
+            </md-item>
+          </md-list>
+        </md-content>
+        <div class="message-box">
+          <textarea ng-enter="sendMessage()" ng-model="chat.message"></textarea>
+        </div>
+      </md-tab>
+    </md-tabs>
+  </div>
+  <md-sidenav class="md-sidenav-right friends-sidenav" md-is-locked-open="true">
+    <md-toolbar>
+      <h2 class="md-toolbar-tools">
+        <span>Friends</span>
+      </h2>
+    </md-toolbar>
+    <md-content class="friends-container">
+      <div ng-repeat="friend in friends">
+        <md-button ng-click="openChat(friend.name)">{{friend.name}}</md-button>
+      </div>
+    </md-content>
+  </md-sidenav>
 </div>

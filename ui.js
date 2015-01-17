@@ -1,4 +1,18 @@
-var pungClient = angular.module('pung-client', ['ngRoute', 'ngMaterial', 'ngMessages']);
+var pungClient = angular.module('pung-client', ['ngRoute', 'ngMaterial', 'ngMessages', 'luegg.directives']);
+
+pungClient.directive('ngEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if(event.which === 13) {
+                scope.$apply(function (){
+                    scope.$eval(attrs.ngEnter);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+});
 
 pungClient.filter('filefrompath', function () {
     return function (input) {
@@ -127,9 +141,77 @@ pungClient.controller('EntryController', function ($scope, globalStore, $mdDialo
     };
 });
 
-pungClient.controller('CommunicatorController', function ($scope, globalStore, $location) {
+pungClient.controller('CommunicatorController', function ($scope, globalStore, $location, $mdSidenav, $timeout) {
     console.log("CommunicatorController");
     angular.extend($scope, globalStore.load());
+
+    $scope.activeChat = -1;
+
+    $scope.chats = [
+    ];
+
+    $scope.friends = [
+        {name: 'marek'},
+        {name: 'andrzej'},
+        {name: 'juzek'}
+    ];
+
+    $scope.friendsMessages = {
+        'marek': [],
+        'andrzej': [],
+        'juzek': []
+    };
+
+    $scope.getTime = function () {
+        return (new Date()).getTime();
+    };
+
+    $scope.sendMessage = function () {
+        var chat = $scope.chats[$scope.activeChat];
+        if (chat.message.trim() !== "") {
+            var friendName = chat.title;
+            var messageText = chat.message;
+            chat.message = "";
+
+            $scope.pushMessage(friendName, {
+                author: 'me',
+                time: $scope.getTime(),
+                body: messageText
+            });
+        }
+    };
+
+    $scope.pushMessage = function (friendName, message) {
+        $scope.friendsMessages[friendName].push(message);
+    };
+
+    $scope.logout = function () {
+        $location.path('/entry');
+    };
+
+    $scope.openChat = function (friendName) {
+        var set = false;
+        $scope.chats.forEach(function (chat, i) {
+            if (chat.title == friendName) {
+                set = true;
+                $scope.activeChat = i;
+            }
+        });
+        if (!set) {
+            $scope.chats.push({
+                title: friendName,
+                messages: $scope.friendsMessages[friendName],
+                message: ""
+            });
+        }
+    };
+
+    $scope.closeChat = function (chat) {
+        var index = $scope.chats.indexOf(chat);
+        if (index !== -1) {
+            $scope.chats.splice(index, 1);
+        }
+    };
 });
 
 pungClient.config(function($routeProvider, $locationProvider) {
@@ -143,7 +225,7 @@ pungClient.config(function($routeProvider, $locationProvider) {
             controller: 'CommunicatorController'
         })
         .otherwise({
-            redirectTo: '/entry'
+            redirectTo: '/communicator'
         });
 
     $locationProvider.html5Mode(true);
