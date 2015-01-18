@@ -163,6 +163,7 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
         });
 
     var procs = require('./procedures');
+    var cu = require('./connUtils');
 
     $scope.activeChat = -1;
 
@@ -174,6 +175,38 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     $scope.friendsMessages = {
     };
+
+    $scope.friendRequests = [
+    ];
+
+    procs.getMessages(cm)
+        .onValue(function (res) {
+            console.log("message", res);
+        })
+        .onError(function (err) {
+            console.error("Error get_messages: " + err);
+        });
+
+    procs.getFriends(cm)
+        .onValue(function (res) {
+            console.log("friend", res);
+        })
+        .onError(function (err) {
+            console.error("Error get_friends: " + err);
+        });
+
+    procs.getFriendRequests(cm)
+        .onValue(function (res) {
+            $timeout(function () {
+                $scope.friendRequests.push({
+                    res: res,
+                    fullid: res.payload[0]
+                });
+            });
+        })
+        .onError(function (err) {
+            console.error("Error get_friend_requests: " + err);
+        });
 
     $scope.errorDialog = function (message) {
         $mdDialog.show(
@@ -202,6 +235,21 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
                 body: messageText
             });
         }
+    };
+
+    $scope.friendshipResponse = function (res, yes) {
+        var index = -1;
+        $scope.friendRequests.forEach(function (req, i) {
+            if (res == req.res) {
+                index = i;
+            }
+        });
+        if (index !== -1) {
+            $scope.friendRequests.splice(index, 1);
+        }
+
+        var msg = cu.Message(res, yes ? "accept" : "refuse");
+        cm.sendFAFMessage(msg);
     };
 
     $scope.pushMessage = function (friendName, message) {
@@ -239,11 +287,15 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     $scope.addFriend = function () {
         $mdDialog.show({
-            controller: 'AddFriend',
-            templateUrl: 'view/addFriend.html'
+            controller: 'AddFriend',            templateUrl: 'view/addFriend.html'
         })
         .then(function(friendName) {
-            console.log(friendName);
+            procs.addFriend(cm, friendName)
+                .onError(function (err) {
+                    $timeout(function () {
+                        $scope.errorDialog('Add friend error: ' + err);
+                    });
+                });
         });
     };
 });

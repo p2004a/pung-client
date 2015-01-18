@@ -30,15 +30,25 @@
     </md-tabs>
   </div>
   <md-sidenav class="md-sidenav-right friends-sidenav" md-is-locked-open="true">
-    <md-toolbar>
-      <h2 class="md-toolbar-tools">
-        <span flex>Friends</span>
-        <md-button ng-click="addFriend()" aria-label="add">add</md-button>
-      </h2>
-    </md-toolbar>
     <md-content class="friends-container">
+      <md-toolbar>
+        <h2 class="md-toolbar-tools">
+          <span flex>Friends</span>
+          <md-button ng-click="addFriend()" aria-label="add">add</md-button>
+        </h2>
+      </md-toolbar>
       <div ng-repeat="friend in friends">
         <md-button ng-click="openChat(friend.name)">{{friend.name}}</md-button>
+      </div>
+      <md-toolbar ng-show="friendRequests.length > 0">
+        <h2 class="md-toolbar-tools">
+          <span flex>Friend requests</span>
+        </h2>
+      </md-toolbar>
+      <div ng-repeat="request in friendRequests">
+        <span flex>{{request.fullid}}</span>
+        <md-button ng-click="friendshipResponse(request.res, true)">yes</md-button>
+        <md-button ng-click="friendshipResponse(request.res, false)">no</md-button>
       </div>
     </md-content>
   </md-sidenav>

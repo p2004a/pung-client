@@ -118,11 +118,11 @@ html, body {
 }
 
 .friends-container {
-    height: calc(100% - 64px);
+    height: 100%;
     z-index: 1000;
 }
 
-.friends-container button {
+.friends-container > button {
     width: calc(100% - 6px);
     margin: 3px;
 }
