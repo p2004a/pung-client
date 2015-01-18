@@ -38,6 +38,26 @@ function createTLSStream(hostname, port, timeout) {
         };
     });
 
+    function streamError(err) {
+        if (!connected) {
+            connectedStream.error(err.message);
+        } else if (streamData.emitter) {
+            streamData.emitter.error(err.message);
+        } else {
+            streamData.readErrors.push(err.message);
+        }
+    }
+
+    function streamClose() {
+        if (!connected) {
+            connectedStream.end();
+        } if (streamData.emitter) {
+            streamData.emitter.end();
+        } else {
+            streamData.endReadStream = true;
+        }
+    }
+
     var socket = net.connect({
         host: hostname,
         port: 24948,
@@ -80,38 +100,13 @@ function createTLSStream(hostname, port, timeout) {
             socket.end();
         });
 
-        cleartextStream.on('error', function (err) {
-            if (!connected) {
-                connectedStream.error(err.message);
-            } else if (streamData.emitter) {
-                streamData.emitter.error(err);
-            } else {
-                streamData.readErrors.push(err);
-            }
-            socket.end();
-        });
+        cleartextStream.on('close', streamClose);
+        cleartextStream.on('error', streamError);
     });
     socket.setKeepAlive(true, 1000 * 30);
 
-    socket.on('error', function (err) {
-        if (!connected) {
-            connectedStream.error(err.message);
-        } else if (streamData.emitter) {
-            streamData.emitter.error(err.message);
-        } else {
-            streamData.readErrors.push(err.message);
-        }
-    });
-
-    socket.on('close', function () {
-        if (!connected) {
-            connectedStream.end();
-        } if (streamData.emitter) {
-            streamData.emitter.end();
-        } else {
-            streamData.endReadStream = true;
-        }
-    });
+    socket.on('error', streamError);
+    socket.on('close', streamClose);
 
     if (timeout) {
         setTimeout(function () {
