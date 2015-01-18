@@ -62,9 +62,37 @@ function logout(cm) {
     return true;
 }
 
+function addFriend(cm, username) {
+    var msg = cu.Message(null, "add_friend", username);
+    return sendOneResMsg(cm, 700, msg)
+        .valuesToErrors(chkMsgType('ok', 0));
+}
+
+function getFriends(cm) {
+    var msg = cu.Message(null, "get_friends");
+    return cm.sendMessage(msg)
+        .valuesToErrors(chkMsgType('friend', 2));
+}
+
+function getMessages(cm) {
+    var msg = cu.Message(null, "get_messages");
+    return cm.sendMessage(msg)
+        .valuesToErrors(chkMsgType('message', 2));
+}
+
+function getFriendRequests(cm) {
+    var msg = cu.Message(null, "get_friend_requests");
+    return cm.sendMessage(msg)
+        .valuesToErrors(chkMsgType('friend_request', 1));
+}
+
 module.exports = {
     ping: ping,
     signup: signup,
     login: login,
-    logout: logout
+    logout: logout,
+    addFriend: addFriend,
+    getFriends: getFriends,
+    getMessages: getMessages,
+    getFriendRequests: getFriendRequests
 };
