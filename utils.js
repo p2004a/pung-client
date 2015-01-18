@@ -25,7 +25,8 @@ function parseRsaPublic(derBase64) {
     try {
         var key = new NodeRSA();
         var der = new Buffer(derBase64, 'base64');
-        key.importKey(der, 'pkcs8-public-der', rsaOptions);
+        key.importKey(der, 'pkcs8-public-der');
+        key.setOptions(rsaOptions);
         return key;
     } catch (e) {
         return null;
