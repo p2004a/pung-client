@@ -169,6 +169,7 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     $scope.activeChat = -1;
     $scope.chats = [];
     $scope.friends = [];
+    $scope.friendsKey = {};
     $scope.friendMessagesEncrypted = {};
     $scope.friendsMessages = {};
     $scope.friendRequests = [];
@@ -179,6 +180,12 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
             $timeout(function () {
                 var messageText = new Buffer(res.payload[1], 'base64').toString('utf8');
                 var friend = res.payload[0];
+                var data = {
+                    message: res.payload[1],
+                    signature: res.payload[2],
+                    key: res.payload[3],
+                    iv: res.payload[4]
+                };
                 if ($scope.friendsMessages[friend] === undefined) {
                     if ($scope.friendMessagesEncrypted[friend] === undefined) {
                         $scope.friendMessagesEncrypted[friend] = [];
@@ -186,15 +193,10 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
                     $scope.friendMessagesEncrypted[friend].push({
                         author: friend,
                         time: $scope.getTime(),
-                        body: messageText
+                        data: data
                     });
                 } else {
-                    $scope.friendsMessages[friend].push({
-                        author: friend,
-                        time: $scope.getTime(),
-                        body: messageText
-                    });
-                    $scope.openChat(friend);
+                    $scope.decryptMessage(friend, $scope.getTime(), data);
                 }
             });
         })
@@ -206,19 +208,20 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
         .onValue(function (res) {
             $timeout(function () {
                 var friendName = res.payload[0];
-                var rsaKey = utils.parseRsaPublic(res.payload[1]);
-                if (rsaKey === null) {
+                var friendRsaKey = utils.parseRsaPublic(res.payload[1]);
+                if (friendRsaKey === null) {
                     $scope.errorDialog('cannot parse public key from: ' + friendName);
                     return;
                 }
                 $scope.friends.push({
                     name: friendName,
-                    key: rsaKey
+                    key: friendRsaKey
                 });
+                $scope.friendsKey[friendName] = friendRsaKey;
                 $scope.friendsMessages[friendName] = [];
                 if ($scope.friendMessagesEncrypted[friendName] !== undefined) {
                     $scope.friendMessagesEncrypted[friendName].forEach(function (msg) {
-                        $scope.friendsMessages[friendName].push(msg);
+                        $scope.decryptMessage(msg.author, msg.time, msg.data);
                     });
                     $scope.openChat(friend);
                 }
@@ -255,6 +258,20 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
         return (new Date()).getTime();
     };
 
+    $scope.decryptMessage = function (friend, time, data) {
+        var messageText = utils.decrypt(rsaKey, $scope.friendsKey[friend], data);
+        if (messageText === null) {
+            $scope.errorDialog("Couldn't decrypt message from " + friend);
+        } else {
+            $scope.friendsMessages[friend].push({
+                author: friend,
+                time: time,
+                body: messageText
+            });
+            $scope.openChat(friend);
+        }
+    };
+
     $scope.sendMessage = function () {
         var chat = $scope.chats[$scope.activeChat];
         if (chat.message.trim() !== "") {
@@ -262,18 +279,24 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
             var messageText = chat.message;
             chat.message = "";
 
-            $scope.pushMessage(friendName, {
-                author: 'me',
-                time: $scope.getTime(),
-                body: messageText
-            });
+            var data = utils.encrypt(rsaKey, $scope.friendsKey[friendName], messageText);
 
-            procs.sendMessage(cm, friendName, messageText)
-                .onError(function (err) {
-                    $timeout(function () {
-                        $scope.errorDialog('Error while sending message: ' + err);
-                    });
+            if (data === null) {
+                $scope.errorDialog('Cannot encrypt message :(');
+            } else {
+                $scope.pushMessage(friendName, {
+                    author: 'me',
+                    time: $scope.getTime(),
+                    body: messageText
                 });
+
+                procs.sendMessage(cm, friendName, data)
+                    .onError(function (err) {
+                        $timeout(function () {
+                            $scope.errorDialog('Error while sending message: ' + err);
+                        });
+                    });
+            }
         }
     };
 

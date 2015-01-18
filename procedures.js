@@ -83,7 +83,7 @@ function getFriends(cm) {
 function getMessages(cm) {
     var msg = cu.Message(null, "get_messages");
     return cm.sendMessage(msg)
-        .valuesToErrors(chkMsgType('message', 2));
+        .valuesToErrors(chkMsgType('message', 5));
 }
 
 function getFriendRequests(cm) {
@@ -92,8 +92,12 @@ function getFriendRequests(cm) {
         .valuesToErrors(chkMsgType('friend_request', 1));
 }
 
-function sendMessage(cm, to, text) {
-    var msg = cu.Message(null, "send_message", to, new Buffer(text).toString('base64'));
+function sendMessage(cm, to, data) {
+    var msg = cu.Message(null, "send_message", to,
+                        data.message,
+                        data.signature,
+                        data.key,
+                        data.iv);
     return sendOneResMsg(cm, 5000, msg)
         .valuesToErrors(chkMsgType('ok', 0));
 }
