@@ -164,6 +164,7 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     var procs = require('./procedures');
     var cu = require('./connUtils');
+    var utils = require('./utils');
 
     $scope.activeChat = -1;
     $scope.chats = [];
@@ -205,9 +206,14 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
         .onValue(function (res) {
             $timeout(function () {
                 var friendName = res.payload[0];
+                var rsaKey = utils.parseRsaPublic(res.payload[1]);
+                if (rsaKey === null) {
+                    $scope.errorDialog('cannot parse public key from: ' + friendName);
+                    return;
+                }
                 $scope.friends.push({
                     name: friendName,
-                    key: res.payload[1]
+                    key: rsaKey
                 });
                 $scope.friendsMessages[friendName] = [];
                 if ($scope.friendMessagesEncrypted[friendName] !== undefined) {
