@@ -166,18 +166,11 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     var cu = require('./connUtils');
 
     $scope.activeChat = -1;
-
-    $scope.chats = [
-    ];
-
-    $scope.friends = [
-    ];
-
-    $scope.friendsMessages = {
-    };
-
-    $scope.friendRequests = [
-    ];
+    $scope.chats = [];
+    $scope.friends = [];
+    $scope.friendMessagesEncrypted = {};
+    $scope.friendsMessages = {};
+    $scope.friendRequests = [];
 
     procs.getMessages(cm)
         .onValue(function (res) {
@@ -186,14 +179,22 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
                 var messageText = new Buffer(res.payload[1], 'base64').toString('utf8');
                 var friend = res.payload[0];
                 if ($scope.friendsMessages[friend] === undefined) {
-                    $scope.friendsMessages[friend] = [];
+                    if ($scope.friendMessagesEncrypted[friend] === undefined) {
+                        $scope.friendMessagesEncrypted[friend] = [];
+                    }
+                    $scope.friendMessagesEncrypted[friend].push({
+                        author: friend,
+                        time: $scope.getTime(),
+                        body: messageText
+                    });
+                } else {
+                    $scope.friendsMessages[friend].push({
+                        author: friend,
+                        time: $scope.getTime(),
+                        body: messageText
+                    });
+                    $scope.openChat(friend);
                 }
-                $scope.friendsMessages[friend].push({
-                    author: friend,
-                    time: $scope.getTime(),
-                    body: messageText
-                });
-                $scope.openChat(friend);
             });
         })
         .onError(function (err) {
@@ -203,10 +204,18 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     procs.getFriends(cm)
         .onValue(function (res) {
             $timeout(function () {
+                var friendName = res.payload[0];
                 $scope.friends.push({
-                    name: res.payload[0],
+                    name: friendName,
                     key: res.payload[1]
                 });
+                $scope.friendsMessages[friendName] = [];
+                if ($scope.friendMessagesEncrypted[friendName] !== undefined) {
+                    $scope.friendMessagesEncrypted[friendName].forEach(function (msg) {
+                        $scope.friendsMessages[friendName].push(msg);
+                    });
+                    $scope.openChat(friend);
+                }
             });
         })
         .onError(function (err) {
@@ -278,9 +287,6 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     };
 
     $scope.pushMessage = function (friendName, message) {
-        if ($scope.friendsMessages[friendName] === undefined) {
-            $scope.friendsMessages[friendName] = [];
-        }
         $scope.friendsMessages[friendName].push(message);
     };
 
