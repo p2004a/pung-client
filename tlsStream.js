@@ -110,9 +110,11 @@ function createTLSStream(hostname, port, timeout) {
 
     if (timeout) {
         setTimeout(function () {
-            connectedStream.error('timeout');
-            connectedStream.end();
-            socket.end();
+            if (!connected) {
+                connectedStream.error('timeout');
+                connectedStream.end();
+                socket.end();
+            }
         }, timeout);
     }
 
