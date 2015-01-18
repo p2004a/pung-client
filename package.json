@@ -8,6 +8,7 @@
         "type": "git",
         "url": "https://github.com/p2004a/pung-client"
         },
+    "single-instance": false,
     "window": {
         "toolbar": true,
         "width": 900,
