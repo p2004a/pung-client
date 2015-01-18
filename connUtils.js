@@ -44,7 +44,7 @@ var ConnectionManager = function (tlsStream) {
     self.sendMessage = function (msg, dontGetConnectionErrors) {
         var stream = Kefir.emitter();
         stream.cSeq = msg.cSeq;
-        stream.dontGetConnectionErrors = dontGetConnectionErrors;
+        stream.dontGetConnectionErrors = dontGetConnectionErrors || false;
         stream.unregister = function () {
             self.unregisterResStream(stream.cSeq);
         };
@@ -88,7 +88,7 @@ var ConnectionManager = function (tlsStream) {
     };
 
     self.msgStream.onError(function (err) {
-        self.destroy();
+        self.destroy(err);
         self.close();
     });
 
