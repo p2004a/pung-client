@@ -86,6 +86,12 @@ function getFriendRequests(cm) {
         .valuesToErrors(chkMsgType('friend_request', 1));
 }
 
+function sendMessage(cm, to, text) {
+    var msg = cu.Message(null, "send_message", to, new Buffer(text).toString('base64'));
+    return sendOneResMsg(cm, 5000, msg)
+        .valuesToErrors(chkMsgType('ok', 0));
+}
+
 module.exports = {
     ping: ping,
     signup: signup,
@@ -94,5 +100,6 @@ module.exports = {
     addFriend: addFriend,
     getFriends: getFriends,
     getMessages: getMessages,
-    getFriendRequests: getFriendRequests
+    getFriendRequests: getFriendRequests,
+    sendMessage: sendMessage
 };

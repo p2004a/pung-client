@@ -181,7 +181,20 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     procs.getMessages(cm)
         .onValue(function (res) {
-            console.log("message", res);
+            cm.sendFAFMessage(cu.Message(res, "ok"));
+            $timeout(function () {
+                var messageText = new Buffer(res.payload[1], 'base64').toString('utf8');
+                var friend = res.payload[0];
+                if ($scope.friendsMessages[friend] === undefined) {
+                    $scope.friendsMessages[friend] = [];
+                }
+                $scope.friendsMessages[friend].push({
+                    author: friend,
+                    time: $scope.getTime(),
+                    body: messageText
+                });
+                $scope.openChat(friend);
+            });
         })
         .onError(function (err) {
             console.error("Error get_messages: " + err);
@@ -189,7 +202,12 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     procs.getFriends(cm)
         .onValue(function (res) {
-            console.log("friend", res);
+            $timeout(function () {
+                $scope.friends.push({
+                    name: res.payload[0],
+                    key: res.payload[1]
+                });
+            });
         })
         .onError(function (err) {
             console.error("Error get_friends: " + err);
@@ -234,6 +252,13 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
                 time: $scope.getTime(),
                 body: messageText
             });
+
+            procs.sendMessage(cm, friendName, messageText)
+                .onError(function (err) {
+                    $timeout(function () {
+                        $scope.errorDialog('Error while sending message: ' + err);
+                    });
+                });
         }
     };
 
@@ -253,6 +278,9 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     };
 
     $scope.pushMessage = function (friendName, message) {
+        if ($scope.friendsMessages[friendName] === undefined) {
+            $scope.friendsMessages[friendName] = [];
+        }
         $scope.friendsMessages[friendName].push(message);
     };
 
@@ -287,7 +315,8 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     $scope.addFriend = function () {
         $mdDialog.show({
-            controller: 'AddFriend',            templateUrl: 'view/addFriend.html'
+            controller: 'AddFriend',
+            templateUrl: 'view/addFriend.html'
         })
         .then(function(friendName) {
             procs.addFriend(cm, friendName)
