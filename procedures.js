@@ -32,7 +32,13 @@ function verify(cm, rsaKey, stream) {
     return stream
         .valuesToErrors(chkMsgType('decrypt', 1))
         .flatMap(function (val) {
-            var msg = cu.Message(val, "check", rsaKey.decrypt(val.payload[0], 'base64'));
+            var res = null;
+            try {
+                res = rsaKey.decrypt(val.payload[0], 'base64');
+            } catch(e) {
+                res = "YXNkZg==";  // wrong res
+            }
+            var msg = cu.Message(val, "check", res);
             return sendOneResMsg(cm, 700, msg);
         })
         .valuesToErrors(chkMsgType('ok', 0));
