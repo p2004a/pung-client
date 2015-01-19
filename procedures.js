@@ -70,7 +70,7 @@ function logout(cm) {
 
 function addFriend(cm, username) {
     var msg = cu.Message(null, "add_friend", username);
-    return sendOneResMsg(cm, 700, msg)
+    return sendOneResMsg(cm, 3000, msg)
         .valuesToErrors(chkMsgType('ok', 0));
 }
 

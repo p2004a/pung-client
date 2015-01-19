@@ -75,7 +75,7 @@ function toMessages(stream) {
 function toOneResTimeoutingStream(resStream, timeout) {
     return Kefir.merge([
         resStream,
-        Kefir.later(timeout, "timeouted")
+        Kefir.later(timeout, "client timeouted")
             .valuesToErrors()
     ])
         .endOnError()
