@@ -223,7 +223,7 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
                     $scope.friendMessagesEncrypted[friendName].forEach(function (msg) {
                         $scope.decryptMessage(msg.author, msg.time, msg.data);
                     });
-                    $scope.openChat(friend);
+                    $scope.openChat(friendName);
                 }
             });
         })
