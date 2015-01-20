@@ -60,7 +60,7 @@ function createTLSStream(hostname, port, timeout) {
 
     var socket = net.connect({
         host: hostname,
-        port: 24948,
+        port: port,
         allowHalfOpen: false
     }, function () {
         var cleartextStream = tls.connect({
