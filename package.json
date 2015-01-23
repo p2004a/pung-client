@@ -10,7 +10,7 @@
         },
     "single-instance": false,
     "window": {
-        "toolbar": true,
+        "toolbar": false,
         "width": 900,
         "height": 700,
         "min_width": 680,

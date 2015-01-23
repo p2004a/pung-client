@@ -46,7 +46,7 @@ var ConnectionManager = function (tlsStream) {
         stream.cSeq = msg.cSeq;
         stream.dontGetConnectionErrors = dontGetConnectionErrors || false;
         stream.unregister = function () {
-            self.unregisterResStream(stream.cSeq);
+            self.unregisterResStream(stream);
         };
         self.responseStreams[msg.cSeq] = stream;
         tlsStream.emit(msg.toString());
