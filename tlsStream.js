@@ -4,121 +4,79 @@ var Kefir = require("kefir").Kefir;
 
 function createTLSStream(hostname, port, timeout) {
     'use strict';
+    var timeoutPool = Kefir.pool();
 
-    var streamData = {
-        readBuffer: "",
-        endReadStream: false,
-        readErrors: [],
-        emitter: null
-    };
-
-    var connectedStream = Kefir.emitter();
-    var connected = false;
-
-    var stream = Kefir.stream(function (emitter) {
-        streamData.emitter = emitter;
-
-        // setTimeout to ensure that sequential calls to onValue, onError, onEnd will finish registration;
-        setTimeout(function () {
-            if (streamData.readBuffer.length > 0) {
-                emitter.emit(streamData.readBuffer);
-                streamData.readBuffer = "";
-            }
-            streamData.readErrors.forEach(function (err) {
-                emitter.error(err);
-            });
-            streamData.readErrors = [];
-            if (streamData.endReadStream) {
-                emitter.end();
-            }
-        }, 0);
-
+    function setTimeoutErr(message, close_cb) {
+        var t = Kefir.later(timeout, message);
+        timeoutPool.plug(t);
+        t.onValue(close_cb);
         return function () {
-            streamData.emitter = null;
+            timeoutPool.unplug(t);
+            t.offValue(close_cb);
         };
-    });
-
-    function streamError(err) {
-        if (!connected) {
-            connectedStream.error(err.message);
-        } else if (streamData.emitter) {
-            streamData.emitter.error(err.message);
-        } else {
-            streamData.readErrors.push(err.message);
-        }
     }
 
-    function streamClose() {
-        if (!connected) {
-            connectedStream.end();
-        } if (streamData.emitter) {
-            streamData.emitter.end();
-        } else {
-            streamData.endReadStream = true;
+    return Kefir.stream(function (connectedEmitter) {
+        function connectionError(err) {
+            connectedEmitter.error(err.message);
         }
-    }
 
-    var socket = net.connect({
-        host: hostname,
-        port: port,
-        allowHalfOpen: false
-    }, function () {
-        var cleartextStream = tls.connect({
-            socket: socket,
-            rejectUnauthorized: false,
-            servername: "localhost"
-        }, function () {
-            stream.emit = function (val) {
-                cleartextStream.write(val, 'utf8');
-            };
-
-            stream.end = function () {
-                if (streamData.emitter) {
-                    streamData.emitter.end();
-                } else {
-                    streamData.endReadStream = true;
-                }
-                cleartextStream.end();
-            };
-
-            cleartextStream.on('data', function(data) {
-                if (streamData.emitter) {
-                    streamData.emitter.emit(data);
-                } else {
-                    streamData.readBuffer += data;
-                }
-            });
-
-            connected = true;
-            connectedStream.emit(stream);
-            connectedStream.end();
+        var socket = net.connect({
+            host: hostname,
+            port: port,
+            allowHalfOpen: false
         });
 
-        cleartextStream.setEncoding('utf8');
-
-        cleartextStream.on('end', function() {
+        var cancelTCPTimeout = setTimeoutErr("TCP Timeout", function () {
             socket.end();
         });
 
-        cleartextStream.on('close', streamClose);
-        cleartextStream.on('error', streamError);
-    });
-    socket.setKeepAlive(true, 1000 * 30);
+        socket.setKeepAlive(true, 1000 * 30);
 
-    socket.on('error', streamError);
-    socket.on('close', streamClose);
+        socket.on('error', connectionError);
 
-    if (timeout) {
-        setTimeout(function () {
-            if (!connected) {
-                connectedStream.error('timeout');
-                connectedStream.end();
-                socket.end();
-            }
-        }, timeout);
-    }
+        socket.on('connect', function () {
+            cancelTCPTimeout();
 
-    return connectedStream;
+            var tlsSocket = tls.connect({
+                socket: socket,
+                rejectUnauthorized: false,
+                servername: hostname
+            });
+
+            var cancelTLSTimeout = setTimeoutErr("TLS Timeout", function () {
+                tlsSocket.end();
+            });
+
+            tlsSocket.setEncoding('utf8');
+
+            tlsSocket.on('error', connectionError);
+
+            tlsSocket.on('secureConnect', function () {
+                cancelTLSTimeout();
+
+                var stream = Kefir.fromEvents(tlsSocket, 'data')
+                    .merge(Kefir.fromEvents(tlsSocket, 'error').valuesToErrors())
+                    .takeUntilBy(Kefir.fromEvents(tlsSocket, 'close'));
+
+                stream.emit = function (val) {
+                    tlsSocket.write(val, 'utf8');
+                };
+
+                stream.end = function () {
+                    tlsSocket.end();
+                };
+
+                socket.removeListener('error', connectionError);
+                tlsSocket.removeListener('error', connectionError);
+
+                connectedEmitter.emit(stream);
+            });
+        });
+    })
+    .merge(timeoutPool.valuesToErrors())
+    .endOnError()
+    .take(1);
 }
 
 module.exports = {
