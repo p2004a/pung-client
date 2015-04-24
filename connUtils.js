@@ -36,19 +36,23 @@ var Message = function (serverMessage, message) {
 
 var ConnectionManager = function (tlsStream) {
     var self = {
-        responseStreams: {},
+        responseEmitters: {},
         msgStream: streamTrans.toMessages(tlsStream).endOnError(),
         running: true
     };
 
     self.sendMessage = function (msg, dontGetConnectionErrors) {
-        var stream = Kefir.emitter();
+        var stream = Kefir.stream(function (emitter) {
+            self.responseEmitters[msg.cSeq] = emitter;
+            return function () {
+                delete self.responseEmitters[msg.cSeq];
+            }
+        });
         stream.cSeq = msg.cSeq;
         stream.dontGetConnectionErrors = dontGetConnectionErrors || false;
         stream.unregister = function () {
             self.unregisterResStream(stream);
         };
-        self.responseStreams[msg.cSeq] = stream;
         tlsStream.emit(msg.toString());
         return stream;
     };
@@ -58,7 +62,7 @@ var ConnectionManager = function (tlsStream) {
     };
 
     self.unregisterResStream = function (stream) {
-        delete self.responseStreams[stream.cSeq];
+        delete self.responseEmitters[stream.cSeq];
     };
 
     self.getErrEndStream = function () {
@@ -77,13 +81,13 @@ var ConnectionManager = function (tlsStream) {
     self.destroy = function (error) {
         if (self.running) {
             self.running = false;
-            Object.keys(self.responseStreams).forEach(function (key) {
-                if (error && !self.responseStreams[key].dontGetConnectionErrors) {
-                    self.responseStreams[key].error(error);
+            Object.keys(self.responseEmitters).forEach(function (key) {
+                if (error && !self.responseEmitters[key].dontGetConnectionErrors) {
+                    self.responseEmitters[key].error(error);
                 }
-                self.responseStreams[key].end();
+                self.responseEmitters[key].end();
             });
-            self.responseStreams = {};
+            self.responseEmitters = {};
         }
     };
 
@@ -93,9 +97,9 @@ var ConnectionManager = function (tlsStream) {
     });
 
     self.msgStream.onValue(function (val) {
-        var resStream = self.responseStreams[val.cSeq];
-        if (resStream !== undefined) {
-            resStream.emit(val);
+        var resEmitter = self.responseEmitters[val.cSeq];
+        if (resEmitter !== undefined) {
+            resEmitter.emit(val);
         } else if (val.message === "ping") {
             self.sendFAFMessage(Message(val, "pong"));
         }
