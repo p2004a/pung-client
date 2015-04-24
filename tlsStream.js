@@ -15,7 +15,7 @@ function createTLSStream(hostname, port, timeout) {
     var connectedStream = Kefir.emitter();
     var connected = false;
 
-    var stream = Kefir.fromBinder(function (emitter) {
+    var stream = Kefir.stream(function (emitter) {
         streamData.emitter = emitter;
 
         // setTimeout to ensure that sequential calls to onValue, onError, onEnd will finish registration;
