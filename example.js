@@ -5,7 +5,7 @@ var procs = require('./procedures');
 var cu = require('./connUtils');
 var utils = require('./utils');
 
-tlsStream.create("localhost", 24948)
+tlsStream.create("main", 24948, 200)
     .onValue(function (stream) {
         var cm = cu.ConnectionManager(stream);
 
@@ -14,7 +14,7 @@ tlsStream.create("localhost", 24948)
                 console.log("end of connection");
             })
             .onError(function (err) {
-                console.error("Connection Error: " + err);
+                console.error("CM Connection Error: " + err);
             });
 
         function loopPing() {
@@ -23,7 +23,9 @@ tlsStream.create("localhost", 24948)
                     .onError(function (err) {
                         console.log("ping err: " + err);
                     });
-                setTimeout(loopPing, 3000);
+                setTimeout(loopPing, 800);
+            } else {
+                console.log("Ping stop");
             }
         }
         loopPing(cm);
@@ -48,5 +50,5 @@ tlsStream.create("localhost", 24948)
             });
     })
     .onError(function (err) {
-        console.error("Connection Error:" + err);
+        console.error("G Connection Error:" + err);
     });
