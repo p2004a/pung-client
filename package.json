@@ -17,7 +17,7 @@
         "min_height": 480
     },
     "dependencies": {
-        "kefir": "^2.0.0",
+        "kefir": "^2.5.0",
         "node-rsa": "^0.2.23"
     }
 }
