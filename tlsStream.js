@@ -41,7 +41,8 @@ function createTLSStream(hostname, port, timeout) {
             var tlsSocket = tls.connect({
                 socket: socket,
                 rejectUnauthorized: false,
-                servername: hostname
+                servername: hostname,
+                ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256"
             });
 
             var cancelTLSTimeout = setTimeoutErr("TLS Timeout", function () {
