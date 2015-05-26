@@ -85,7 +85,10 @@ var ConnectionManager = function (tlsStream) {
                 if (error && !self.responseEmitters[key].dontGetConnectionErrors) {
                     self.responseEmitters[key].error(error);
                 }
-                self.responseEmitters[key].end();
+                // check because handler of error could remove it already:
+                if (key in self.responseEmitters) {
+                    self.responseEmitters[key].end();
+                }
             });
             self.responseEmitters = {};
         }
