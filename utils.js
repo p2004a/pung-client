@@ -3,7 +3,7 @@ var NodeRSA = require('node-rsa');
 var crypto = require('crypto');
 
 var rsaOptions = {
-    environment: 'node',
+    environment: 'browser',
     encryptionScheme: {
         scheme: 'pkcs1_oaep',
         hash: 'sha256',
