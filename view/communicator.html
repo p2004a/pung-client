@@ -6,21 +6,19 @@
     </md-content>
     <md-tabs md-selected="activeChat" class="chat-tabs">
       <md-tab ng-repeat="chat in chats" label="{{chat.title}}">
-        <md-tab-label layout="row">
+        <!--<md-tab-label layout="row">
           <span ng-bind="chat.title"></span>
           <md-button aria-label="remove" ng-click="closeChat(chat)">×</md-button>
-        </md-tab-label>
+        </md-tab-label>-->
         <md-content class="messages-container" scroll-glue>
           <md-list>
-            <md-item ng-repeat="msg in chat.messages">
-              <md-item-content>
-                <div class="md-tile-content">
-                  <h3>{{msg.author}}</h3>
-                  <h4>{{msg.time | date : 'mediumTime'}}</h4>
-                  <pre>{{msg.body}}</pre>
-                </div>
-              </md-item-content>
-            </md-item>
+            <md-list-item class="md-3-line" ng-repeat="msg in chat.messages">
+              <div class="md-list-item-text">
+                <h3>{{msg.author}}</h3>
+                <h4>{{msg.time | date : 'mediumTime'}}</h4>
+                <pre>{{msg.body}}</pre>
+              </div>
+            </md-list-item>
           </md-list>
         </md-content>
         <div class="message-box">
