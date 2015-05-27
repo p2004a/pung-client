@@ -26,6 +26,25 @@
     <script src="bower_components/angular-scroll-glue/src/scrollglue.js"></script>
 
     <script type="text/javascript" src="ui.js"></script>
+
+    <script>
+      function watchCSS() {
+        var gulp = require('gulp');
+
+        gulp.task('css', function () {
+          var styles = document.querySelectorAll('link[rel=stylesheet]');
+
+          for (var i = 0; i < styles.length; i++) {
+            // reload styles
+            var restyled = styles[i].getAttribute('href') + '?v='+Math.random(0,10000);
+            styles[i].setAttribute('href', restyled);
+          };
+        });
+
+        gulp.watch(['**/*.css'], ['css']);
+        gulp.start('css');
+      };
+    </script>
   </head>
   <body ng-controller="UIController">
     <div class="view" ng-view></div>
