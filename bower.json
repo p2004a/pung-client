@@ -11,11 +11,7 @@
     "angular-route": "~1.4.0",
     "angular-messages": "~1.4.0",
     "angular-material": "master",
-    "angular-scroll-glue": "~2.0.3"
-  },
-  "resolutions": {
-    "angular": "~1.4.0",
-    "angular-route": "~1.4.0",
-    "angular-messages": "~1.4.0"
+    "angular-scroll-glue": "~2.0.3",
+    "components-font-awesome": "4.3.0"
   }
 }
