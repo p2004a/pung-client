@@ -28,18 +28,10 @@
     top: -10px;
     right: -15px;
     opacity: 0.1;
-    transition: all 0.25s;
 }
 
-.close-tab-icon:hover {
+.close-tab-icon:hover, .close-tab-icon:active {
     opacity: 1;
-    cursor: pointer;
-}
-
-.close-tab-icon:active {
-    outline: 0;
-    opacity: 1;
-    cursor: pointer;
 }
 
 .messages-container {

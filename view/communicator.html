@@ -12,7 +12,7 @@
     <md-tabs md-selected="activeChat" class="md-primary chat-place" ng-show="chats.length >= 1">
       <md-tab ng-repeat="chat in chats">
         <md-tab-label>
-          <span class="disable-uppercase">{{chat.title}}</span><i ng-click="closeChat(chat)" class="close-tab-icon fa fa-times"></i>
+          <span class="disable-uppercase">{{chat.title}}</span><i ng-click="closeChat(chat)" class="close-tab-icon clickable-icon fa fa-times"></i>
         </md-tab-label>
         <md-tab-body>
           <md-content class="messages-container" scroll-glue>

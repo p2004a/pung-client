@@ -24,8 +24,48 @@ html, body {
     background-color: #CCCCCC;
 }
 
+.clickable-icon {
+    transition: all 0.25s;
+    cursor: pointer;
+}
+
+.clickable-icon:focus {
+    outline: 0;
+}
+
+.titlebar {
+    height: 30px;
+    -webkit-app-region: drag;
+    display: flex;
+    flex-direction: row;
+    padding: 0 5px 0 5px;
+}
+
+.titlebar-button {
+    -webkit-app-region: no-drag;
+    flex-grow: 0;
+    width: 20px;
+    height: 30px;
+    font-size: 14px;
+    line-height: 30px;
+    text-align: center;
+    color: #555;
+}
+
+.titlebar-button:hover, .titlebar-button:active {
+    color: #888;
+}
+
+.titlebar-bar {
+    flex-grow: 1;
+    font-size: 14px;
+    line-height: 30px;
+    text-align: center;
+    margin-left: 90px;
+}
+
 .view {
-    height: calc(100% - 22px);
+    height: calc(100% - 22px - 30px);
     width: 100%;
 }
 
