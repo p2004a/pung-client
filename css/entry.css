@@ -1,0 +1,16 @@
+.entry-form-div {
+    -webkit-user-select: none;
+    width: 300px;
+}
+
+.error-box-placeholder {
+    height: 22px;
+    padding-left: 5px;
+    top: -10px;
+    position: relative;
+    margin-bottom: -10px;
+}
+
+.keyfile-button {
+    text-align: left;
+}

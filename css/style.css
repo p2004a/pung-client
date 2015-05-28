@@ -1,0 +1,43 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 7px rgba(0,0,0,0.1);
+    background-color: #FAFAFA;
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    background-color: #FAFAFA;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #CCCCCC;
+}
+
+.view {
+    height: calc(100% - 22px);
+    width: 100%;
+}
+
+.foot {
+    height: 22px;
+    padding-top: 3px;
+    font-size: 12px;
+    text-align: center;
+    color: #ccc;
+}
+
+.view-child {
+    width: 100%;
+    height: 100%;
+}

@@ -1,6 +1,6 @@
 <div class="view-child" layout="column" layout-align="center center" ng-show="notLoading">
   <form name="entryForm" novalidate>
-    <div class="form-div" layout="column" layout-align="center">
+    <div class="entry-form-div" layout="column" layout-align="center">
       <md-input-container>
         <label>Username</label>
         <input
@@ -17,7 +17,7 @@
       <input id="entryFormFileChooser" style="display:none" type="file" accept=".pem,.key" required>
       <input type="hidden" name="keyfile" ng-model="keyfile" required pattern=".*\.(pem|key)">
       <md-button class="keyfile-button" ng-click="selectFile()">
-      <!--<object class="file-icon" data="img/icons/ic_insert_drive_file_24px.svg"></object> --><i class="fa fa-key"></i> {{keyfile | filefrompath}}
+        <i class="fa fa-key"></i> {{keyfile | filefrompath}}
       </md-button>
       <div class="error-box-placeholder">
         <div class="error-box" ng-messages="entryForm.keyfile.$error" ng-show="showEntryFormErrors">
@@ -25,8 +25,7 @@
           <span ng-message="pattern">You have to select keyfile!</span>
         </div>
       </div>
-
-      <div class="entry-button-box" layout="row" layout-align="center">
+      <div layout="row" layout-align="center">
         <md-button flex="40" ng-click="try('login')" class="md-raised">login</md-button>
         <md-button flex="40" ng-click="try('signup')" class="md-raised">sign up</md-button>
       </div>

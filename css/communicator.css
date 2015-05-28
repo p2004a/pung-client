@@ -1,0 +1,80 @@
+.left-side-container {
+    height: 100%;
+    width: 100%;
+}
+
+.top-menu {
+    padding: 5px 5px 5px 15px;
+    height: 60px;
+    line-height: 50px;
+}
+
+.chat-place {
+    min-height: calc(100% - 60px); /* substract top-menu height */
+    height: calc(100% - 60px);
+}
+
+.chats-placeholder {
+    font-size: 16px;
+    color: #ccc;
+}
+
+.disable-uppercase {
+    text-transform: none;
+}
+
+.close-tab-icon {
+    position: relative;
+    top: -10px;
+    right: -15px;
+    opacity: 0.1;
+    transition: all 0.25s;
+}
+
+.close-tab-icon:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.close-tab-icon:active {
+    outline: 0;
+    opacity: 1;
+    cursor: pointer;
+}
+
+.messages-container {
+    height: calc(100% - 50px); /* substract message-box height */
+    overflow-y: scroll;
+    -webkit-user-select: text;
+    cursor: auto;
+    word-wrap: break-word;
+}
+
+.message-box {
+    width: 100%;
+    height: 50px;
+}
+
+.message-box > textarea {
+    height: 50px;
+    width: 100%;
+    resize: none;
+    padding: 3px;
+    border-color: rgba(0,0,0,0.12);
+    border-width: 1px;
+}
+
+.message-box > textarea:focus {
+    padding: 2px;
+    outline: 0;
+    border-color: rgb(63,81,181);
+    border-width: 2px;
+}
+
+.friends-sidenav {
+    height: 100%;
+}
+
+.frient-request-box {
+    padding: 0 16px 0 16px;
+}
