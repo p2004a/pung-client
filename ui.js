@@ -3,7 +3,9 @@ var pungClient = angular.module('pung-client', ['ngRoute', 'ngMaterial', 'ngMess
 pungClient.directive('ngEnter', function () {
     return function (scope, element, attrs) {
         element.bind("keydown keypress", function (event) {
-            if(event.which === 13) {
+            if (event.which === 13 && !event.shiftKey
+              && !event.altKey && !event.ctrlKey) {
+                console.log(event);
                 scope.$apply(function (){
                     scope.$eval(attrs.ngEnter);
                 });
