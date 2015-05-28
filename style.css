@@ -2,6 +2,8 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100%;
+    -webkit-user-select: none;
+    cursor: default;
 }
 
 *, *:before, *:after {
@@ -37,7 +39,6 @@ html, body {
     font-size: 12px;
     text-align: center;
     color: #999;
-    -webkit-user-select: none;
 }
 
 .view-child {
@@ -61,6 +62,10 @@ html, body {
 
 .error-box-placeholder {
     height: 22px;
+    padding-left: 5px;
+    top: -10px;
+    position: relative;
+    margin-bottom: -10px;
 }
 
 .error-box > span {
@@ -69,17 +74,7 @@ html, body {
 }
 
 .keyfile-button {
-    line-height: 35px;
-    display: block;
     text-align: left;
-}
-
-.file-icon {
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    position: relative;
-    top: 4px;
 }
 
 .main-container {
@@ -87,18 +82,16 @@ html, body {
     width: 100%;
 }
 
-.messages-container {
-    height: calc(100% - 50px);
-    overflow-y: scroll;
-}
-
-.top-menu > button {
-    min-width: 110px;
-}
-
 .top-menu {
     padding: 5px;
     height: 60px;
+}
+
+.loggedas {
+    font-size: 14px;
+    color: #555;
+    line-height: 50px;
+    padding-left: 10px;
 }
 
 .chat-tabs {
@@ -106,21 +99,35 @@ html, body {
     height: calc(100% - 60px);
 }
 
-.md-tabs-content {
-    min-height: calc(100% - 48px);
-    height: calc(100% - 48px);
-    position: relative;
+.disable-uppercase {
+    text-transform: none;
 }
 
-.chat-tabs md-tab-label span {
-    line-height: 30px;
+.close-tab-icon {
+    position: relative;
+    top: -10px;
+    right: -15px;
+    opacity: 0.1;
+    transition: all 0.25s;
 }
 
-.chat-tabs md-tab-label button {
-    height: 30px;
-    position: relative;
-    bottom: 6px;
-    color: white;
+.close-tab-icon:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+.close-tab-icon:active {
+    outline: 0;
+    opacity: 1;
+    cursor: pointer;
+}
+
+.messages-container {
+    height: calc(100% - 50px);
+    overflow-y: scroll;
+    -webkit-user-select: text;
+    cursor: auto;
+    word-wrap: break-word;
 }
 
 .message-box {
@@ -129,28 +136,25 @@ html, body {
 }
 
 .message-box > textarea {
-    max-height: 100px;
+    height: 50px;
     width: 100%;
     resize: none;
+    padding: 3px;
+    border-color: rgba(0,0,0,0.12);
+    border-width: 1px;
 }
 
-.friends-container {
-    height: 100%;
-    z-index: 1000;
-}
-
-.friends-container > button {
-    width: calc(100% - 6px);
-    margin: 3px;
+.message-box > textarea:focus {
+    padding: 2px;
+    outline: 0;
+    border-color: rgb(63,81,181);
+    border-width: 2px;
 }
 
 .friends-sidenav {
     height: 100%;
 }
 
-.loggedas {
-    font-size: 12px;
-    color: #555;
-    line-height: 40px;
-    padding-left: 5px;
+.frient-request-box {
+    padding: 0 16px 0 16px;
 }

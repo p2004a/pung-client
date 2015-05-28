@@ -1,53 +1,57 @@
 <div class="view-child" layout="row">
   <div class="main-container">
     <md-content layout="row" class="top-menu">
-      <span class="loggedas" flex>{{user}}@{{host}}</span>
-      <md-button ng-click="logout()">logout</md-button>
+      <span class="loggedas">{{user}}@{{host}}</span>
+      <span flex></span>
+      <md-button ng-click="logout()" class="md-icon-button"><i class="fa fa-sign-out"></i></md-button>
     </md-content>
-    <md-tabs md-selected="activeChat" class="chat-tabs">
-      <md-tab ng-repeat="chat in chats" label="{{chat.title}}">
-        <!--<md-tab-label layout="row">
-          <span ng-bind="chat.title"></span>
-          <md-button aria-label="remove" ng-click="closeChat(chat)">×</md-button>
-        </md-tab-label>-->
-        <md-content class="messages-container" scroll-glue>
-          <md-list>
-            <md-list-item class="md-3-line" ng-repeat="msg in chat.messages">
-              <div class="md-list-item-text">
-                <h3>{{msg.author}}</h3>
-                <h4>{{msg.time | date : 'mediumTime'}}</h4>
-                <pre>{{msg.body}}</pre>
-              </div>
-            </md-list-item>
-          </md-list>
-        </md-content>
-        <div class="message-box">
-          <textarea ng-enter="sendMessage()" ng-model="chat.message"></textarea>
-        </div>
+    <md-tabs md-selected="activeChat" class="chat-tabs" ng-show="chats.length >= 1">
+      <md-tab ng-repeat="chat in chats">
+        <md-tab-label>
+          <span class="disable-uppercase">{{chat.title}}</span><i ng-click="closeChat(chat)" class="close-tab-icon fa fa-times"></i>
+        </md-tab-label>
+        <md-tab-body>
+          <md-content class="messages-container" scroll-glue>
+            <md-list>
+              <md-list-item class="md-3-line" ng-repeat="msg in chat.messages">
+                <div class="md-list-item-text">
+                  <h3>{{msg.author}}</h3>
+                  <h4>{{msg.time | date : 'mediumTime'}}</h4>
+                  <p>{{msg.body}}</p>
+                </div>
+              </md-list-item>
+            </md-list>
+          </md-content>
+          <div class="message-box">
+            <textarea ng-enter="sendMessage()" ng-model="chat.message"></textarea>
+          </div>
+        </md-tab-body>
       </md-tab>
     </md-tabs>
   </div>
   <md-sidenav class="md-sidenav-right friends-sidenav" md-is-locked-open="true">
-    <md-content class="friends-container">
-      <md-toolbar>
-        <h2 class="md-toolbar-tools">
-          <span flex>Friends</span>
-          <md-button ng-click="addFriend()" aria-label="add">add</md-button>
-        </h2>
-      </md-toolbar>
-      <div ng-repeat="friend in friends">
-        <md-button ng-click="openChat(friend.name)">{{friend.name}}</md-button>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2><span>Friends</span></h2>
+        <span flex></span>
+        <md-button ng-click="addFriend()" aria-label="add" class="md-icon-button"><i class="fa fa-plus"></i></md-button>
       </div>
-      <md-toolbar ng-show="friendRequests.length > 0">
-        <h2 class="md-toolbar-tools">
-          <span flex>Friend requests</span>
-        </h2>
-      </md-toolbar>
-      <div ng-repeat="request in friendRequests">
-        <span flex>{{request.fullid}}</span>
-        <md-button ng-click="friendshipResponse(request.res, true)">yes</md-button>
-        <md-button ng-click="friendshipResponse(request.res, false)">no</md-button>
-      </div>
-    </md-content>
+    </md-toolbar>
+    <md-list>
+      <section>
+        <md-list-item ng-repeat="friend in friends" ng-click="openChat(friend.name)">
+          {{friend.name}}
+        </md-list-item>
+      </section>
+      <section ng-show="friendRequests.length > 0">
+        <md-subheader>Requests</md-subheader>
+        <md-list-item class="md-primary frient-request-box" ng-repeat="request in friendRequests">
+          {{request.fullid}}
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="friendshipResponse(request.res, true)" aria-label="yes"><i class="fa fa-check"></i></md-button>
+          <md-button class="md-icon-button" ng-click="friendshipResponse(request.res, false)" aria-label="no"><i class="fa fa-times"></i></md-button>
+        </md-list-item>
+      </section>
+    </md-list>
   </md-sidenav>
 </div>
