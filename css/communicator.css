@@ -47,7 +47,11 @@
     overflow-y: scroll;
     -webkit-user-select: text;
     cursor: auto;
+}
+
+.message-body {
     word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .message-box {
