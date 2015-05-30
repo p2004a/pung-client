@@ -19,14 +19,12 @@ and you are done.
 Running
 -------
 
-Client is using [node-webkit](https://github.com/nwjs/nw.js/tree/master) as
-runtime. While development I was using version v0.11.5.
+Just type
 
-To run client execute `nw` with path to directory containing client as first
-argument.
+    npm start
 
-Project is configured for development. After starting client you will see
-toolbar. To hide it set `window/toolbar` to `false` in `package.json`.
+and the client window will show up.
+
 
 Notes
 -----
