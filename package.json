@@ -4,10 +4,14 @@
     "author": "Marek Rusinowski <marekrusinowski@gmail.com>",
     "private": true,
     "main": "index.html",
+    "scripts": {
+        "start": "nw"
+    },
+    "js-flags": "--harmony_arrow_functions",
     "repository": {
         "type": "git",
         "url": "https://github.com/p2004a/pung-client"
-        },
+    },
     "single-instance": false,
     "window": {
         "toolbar": false,
@@ -19,7 +23,8 @@
     },
     "dependencies": {
         "kefir": "^2.5.0",
-        "node-rsa": "^0.2.23"
+        "node-rsa": "^0.2.23",
+        "nw": "^0.12.2"
     },
     "devDependencies": {
         "gulp": "^3.8.11"
