@@ -168,6 +168,8 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
     var cu = require('./connUtils');
     var utils = require('./utils');
 
+    var iv_cache = {};
+
     $scope.activeChat = -1;
     $scope.chats = [];
     $scope.friends = [];
@@ -188,6 +190,11 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
                     key: res.payload[3],
                     iv: res.payload[4]
                 };
+                if (data.iv in iv_cache) {
+                    $scope.errorDialog('Server tried to send as two identical messages, possibly server trying to do MITM');
+                    return;
+                }
+                iv_cache[data.iv] = true;
                 if ($scope.friendsMessages[friend] === undefined) {
                     if ($scope.friendMessagesEncrypted[friend] === undefined) {
                         $scope.friendMessagesEncrypted[friend] = [];
