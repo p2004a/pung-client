@@ -1,18 +1,26 @@
 var Kefir = require("kefir").Kefir;
 var streamTrans = require("./streamTransformations");
 
-var SeqGen = {
-    seq: 0,
-    get: function () {
-        SeqGen.seq += 1;
-        return SeqGen.seq;
-    }
-};
+var SeqGen = function (start) {
+    var self = {
+        _seq: start || 1
+    };
+
+    self.get = function () {
+        var res = self._seq;
+        self._seq += 1;
+        return res;
+    };
+
+    return self;
+}
+
+var MessageSeqGen = SeqGen(1);
 
 var Message = function (serverMessage, message) {
     var self = {
         sSeq: serverMessage ? serverMessage.sSeq : null,
-        cSeq: SeqGen.get(),
+        cSeq: MessageSeqGen.get(),
         payload: [],
         message: message ? message : ""
     };
@@ -36,42 +44,57 @@ var Message = function (serverMessage, message) {
 
 var ConnectionManager = function (tlsStream) {
     var self = {
-        responseEmitters: {},
-        msgStream: streamTrans.toMessages(tlsStream).endOnError(),
-        running: true
+        _responseHandlers: {},
+        _msgStream: streamTrans.toMessages(tlsStream).endOnError(),
+        _running: true
     };
 
-    self.sendMessage = function (msg, dontGetConnectionErrors) {
-        var stream = Kefir.stream(function (emitter) {
-            self.responseEmitters[msg.cSeq] = emitter;
-            return function () {
-                delete self.responseEmitters[msg.cSeq];
+    self.sendMessage = function (msg, userOptions) {
+        var options = {
+            connection_errors: true,
+            responses: Infinity,
+        };
+
+        Object.keys(options).forEach(key => {
+            if (key in userOptions) {
+                options[key] = userOptions[key];
             }
         });
-        stream.cSeq = msg.cSeq;
-        stream.dontGetConnectionErrors = dontGetConnectionErrors || false;
-        stream.unregister = function () {
-            self.unregisterResStream(stream);
-        };
+
         tlsStream.emit(msg.toString());
-        return stream;
+
+        if (options.responses > 0) {
+            self._responseHandlers[msg.cSeq] = {
+                options: options,
+                response_count: 0,
+                emitter: null,
+                cSeq: msg.cSeq
+            };
+
+            var stream = Kefir.stream(emitter => {
+                self._responseHandlers[msg.cSeq].emitter = emitter;
+                return () => self._responseHandlers[msg.cSeq].emitter = null;
+            });
+
+            return stream;
+        } else {
+            return null;
+        }
     };
 
-    self.sendFAFMessage = function (msg) {
-        tlsStream.emit(msg.toString());
-    };
-
-    self.unregisterResStream = function (stream) {
-        delete self.responseEmitters[stream.cSeq];
+    self.unregister = function (cSeq) {
+        if (self._responseHandlers[cSeq].emitter) {
+            self._responseHandlers[cSeq].emitter.end();
+        }
+        delete self._responseHandlers[cSeq];
     };
 
     self.getErrEndStream = function () {
-        return self.msgStream
-            .filter(function () { return false; });
+        return self._msgStream.filter(() => false);
     };
 
     self.isActive = function () {
-        return self.running;
+        return self._running;
     };
 
     self.close = function () {
@@ -79,36 +102,51 @@ var ConnectionManager = function (tlsStream) {
     };
 
     self.destroy = function (error) {
-        if (self.running) {
-            self.running = false;
-            Object.keys(self.responseEmitters).forEach(function (key) {
-                if (error && !self.responseEmitters[key].dontGetConnectionErrors) {
-                    self.responseEmitters[key].error(error);
+        if (self._running) {
+            self._running = false;
+            Object.keys(self._responseHandlers).forEach(function (key) {
+                if (error && self._responseHandlers[key].options.connection_errors && self._responseHandlers[key].emitter) {
+                    self._responseHandlers[key].emitter.error(error);
                 }
                 // check because handler of error could remove it already:
-                if (key in self.responseEmitters) {
-                    self.responseEmitters[key].end();
+                if (key in self._responseHandlers) {
+                    if (self._responseHandlers[key].emitter) {
+                        self._responseHandlers[key].emitter.end();
+                    }
                 }
             });
-            self.responseEmitters = {};
+            self._responseHandlers = {};
         }
     };
 
-    self.msgStream.onError(function (err) {
+    self._msgStream.onError(function (err) {
         self.destroy(err);
         self.close();
     });
 
-    self.msgStream.onValue(function (val) {
-        var resEmitter = self.responseEmitters[val.cSeq];
-        if (resEmitter !== undefined) {
-            resEmitter.emit(val);
+    self._msgStream.onValue(function (val) {
+        var handler = self._responseHandlers[val.cSeq];
+        if (handler !== undefined) {
+            handler.response_count += 1;
+            if (handler.emitter) {
+                handler.emitter.emit(val);
+            }
+            if (handler.response_count >= handler.options.responses) {
+                if (handler.emitter) {
+                    handler.emitter.end();
+                }
+                if (self._responseHandlers[handler.cSeq]) {
+                    delete self._responseHandlers[handler.cSeq];
+                }
+            }
         } else if (val.message === "ping") {
-            self.sendFAFMessage(Message(val, "pong"));
+            self.sendMessage(Message(val, "pong"), {responses: 0});
+        } else {
+            console.warn("WARN: Unexpected message from server: ", val);
         }
     });
 
-    self.msgStream.onEnd(function () {
+    self._msgStream.onEnd(function () {
         self.destroy();
     });
 

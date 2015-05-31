@@ -178,7 +178,7 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
 
     procs.getMessages(cm)
         .onValue(function (res) {
-            cm.sendFAFMessage(cu.Message(res, "ok"));
+            cm.sendMessage(cu.Message(res, "ok"), {responses: 0});
             $timeout(function () {
                 var messageText = new Buffer(res.payload[1], 'base64').toString('utf8');
                 var friend = res.payload[0];
@@ -314,7 +314,7 @@ pungClient.controller('CommunicatorController', function ($scope, globalStore, $
         }
 
         var msg = cu.Message(res, yes ? "accept" : "refuse");
-        cm.sendFAFMessage(msg);
+        cm.sendMessage(msg, {responses: 0});
     };
 
     $scope.pushMessage = function (friendName, message) {
